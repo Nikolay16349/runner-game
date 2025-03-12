@@ -3,13 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Бегущая игра</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Runner Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            background-color: white;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            font-weight: bold;
+        }
+        #jumpButton {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            background-color: blue;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
     <div id="score">Очки: 0</div>
-    <button id="jumpButton">ПРЫЖОК</button>
-    <script src="game.js"></script>
+    <canvas id="gameCanvas"></canvas>
+    <button id="jumpButton">Прыжок</button>
+    <script src="script.js"></script>
 </body>
 </html>
