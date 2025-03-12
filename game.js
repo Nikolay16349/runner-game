@@ -1,18 +1,16 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// Адаптация под размер экрана
 canvas.width = window.innerWidth * 0.9;
 canvas.height = window.innerHeight * 0.5;
 
 const groundLevel = canvas.height - 50;
 
-// Персонаж
+// Персонаж (синий круг)
 let player = { 
     x: 50, 
-    y: groundLevel - 30, 
-    width: 30, 
-    height: 30, 
+    y: groundLevel - 15, 
+    radius: 15, 
     dy: 0, 
     jumping: false 
 };
@@ -23,7 +21,13 @@ let gameSpeed = 3;
 let gravity = 0.5;
 let jumpPower = -10;
 let obstacleTimer = 0;
-let obstacleInterval = 100; // Увеличенное расстояние между препятствиями
+let obstacleInterval = 100;
+let score = 0;
+
+// Обновляем счетчик очков
+function updateScore() {
+    document.getElementById("score").textContent = Очки: ${score};
+}
 
 // Обработчик для ПК (Пробел)
 document.addEventListener("keydown", (e) => {
@@ -47,8 +51,8 @@ function update() {
     player.dy += gravity;
 
     // Ограничение, чтобы не проваливался под землю
-    if (player.y + player.height >= groundLevel) {
-        player.y = groundLevel - player.height;
+    if (player.y + player.radius >= groundLevel) {
+        player.y = groundLevel - player.radius;
         player.dy = 0;
         player.jumping = false;
     }
@@ -58,44 +62,67 @@ function update() {
         obstacles[i].x -= gameSpeed;
 
         // Проверяем столкновение
-        if (
-            player.x < obstacles[i].x + obstacles[i].width &&
-            player.x + player.width > obstacles[i].x &&
-            player.y < obstacles[i].y + obstacles[i].height &&
-            player.y + player.height > obstacles[i].y
-        ) {
-            alert("Game Over!");
+        let dx = Math.abs(player.x - obstacles[i].x);
+        let dy = Math.abs(player.y - (obstacles[i].y - 15));
+        let distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < player.radius + 15) {
+            alert("Game Over! Ваши очки: " + score);
             document.location.reload();
+        }
+
+        // Если игрок прошел препятствие, добавляем очки
+        if (obstacles[i].x + obstacles[i].width < player.x && !obstacles[i].scored) {
+            score++;
+            updateScore();
+            obstacles[i].scored = true;
+
+            // Каждые 10 препятствий увеличиваем скорость
+            if (score % 10 === 0) {
+                gameSpeed += 0.5;
+            }
         }
     }
 
     // Удаляем препятствия, которые вышли за экран
     obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
 
-    // Создаём препятствия с нормальным интервалом
+    // Создаём препятствия
     if (obstacleTimer <= 0) {
-        obstacles.push({ x: canvas.width, y: groundLevel - 30, width: 20, height: 30 });
-        obstacleTimer = obstacleInterval; // Сброс таймера
+        obstacles.push({ 
+            x: canvas.width, 
+            y: groundLevel, 
+            width: 30, 
+            height: 30, 
+            scored: false 
+        });
+        obstacleTimer = obstacleInterval;
     } else {
-        obstacleTimer--; // Уменьшаем таймер
+        obstacleTimer--;
     }
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Рисуем землю
-    ctx.fillStyle = "green";
+    // Рисуем черную "землю"
+    ctx.fillStyle = "black";
     ctx.fillRect(0, groundLevel, canvas.width, 50);
 
-    // Рисуем персонажа
-    ctx.fillStyle = "red";
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+    // Рисуем персонажа (синий круг)
+    ctx.fillStyle = "blue";
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Рисуем препятствия
+    // Рисуем препятствия (черные треугольники)
     ctx.fillStyle = "black";
     for (let obstacle of obstacles) {
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        ctx.beginPath();
+        ctx.moveTo(obstacle.x, obstacle.y);
+        ctx.lineTo(obstacle.x + obstacle.width, obstacle.y);
+        ctx.lineTo(obstacle.x + obstacle.width / 2, obstacle.y - obstacle.height);
+        ctx.fill();
     }
 }
 
