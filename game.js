@@ -43,13 +43,8 @@ function update() {
     }
 
     // Двигаем препятствия
-    for (let i = obstacles.length - 1; i >= 0; i--) {
+    for (let i = 0; i < obstacles.length; i++) {
         obstacles[i].x -= gameSpeed;
-
-        // Удаляем, если препятствие вышло за экран
-        if (obstacles[i].x + obstacles[i].width < 0) {
-            obstacles.splice(i, 1);
-        }
 
         // Проверяем столкновение
         if (
@@ -62,6 +57,9 @@ function update() {
             document.location.reload();
         }
     }
+
+    // Удаляем препятствия, которые вышли за экран
+    obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
 
     // Создаём препятствия с нормальным интервалом
     if (obstacleTimer <= 0) {
