@@ -23,8 +23,17 @@ let groundLevel = canvas.height - 50;
 let obstacleTimer = 0;
 let obstacleInterval = 120; // Увеличенное расстояние между препятствиями
 
+// Обработчик для ПК (Пробел)
 document.addEventListener("keydown", (e) => {
     if (e.code === "Space" && !player.jumping) {
+        player.dy = jumpPower;
+        player.jumping = true;
+    }
+});
+
+// Обработчик для телефона (Кнопка)
+document.getElementById("jumpButton").addEventListener("touchstart", () => {
+    if (!player.jumping) {
         player.dy = jumpPower;
         player.jumping = true;
     }
@@ -93,10 +102,5 @@ function gameLoop() {
     draw();
     requestAnimationFrame(gameLoop);
 }
-document.getElementById("jumpButton").addEventListener("click", () => {
-    if (!player.jumping) {
-        player.dy = jumpPower;
-        player.jumping = true;
-    }
-});
+
 gameLoop();
