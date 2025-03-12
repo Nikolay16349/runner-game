@@ -1,3 +1,4 @@
+> Nikolay Zverev:
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -52,14 +53,16 @@
         window.addEventListener("resize", resizeCanvas);
         resizeCanvas();
 
-        const groundLevel = canvas.height - 50;
-        let player = { x: 50, y: groundLevel - 15, radius: 15, dy: 0, jumping: false };
+        const groundHeight = 80; // Высота земли
+        const groundLevel = canvas.height - groundHeight; // Подняли землю выше
+
+        let player = { x: 50, y: groundLevel - 20, radius: 20, dy: 0, jumping: false };
         let obstacles = [];
         let gameSpeed = 3;
         let gravity = 0.4;
-        let jumpPower = -10;
+        let jumpPower = -12;
         let obstacleTimer = 0;
-        let obstacleInterval = 120;
+        let obstacleInterval = 100;
         let score = 0;
 
         function update() {
@@ -96,7 +99,7 @@
                 let minGap = 200;
                 let maxGap = 400;
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
-                obstacles.push({ x: canvas.width + randomGap, y: groundLevel, width: 30, height: 30, scored: false });
+                obstacles.push({ x: canvas.width + randomGap, y: groundLevel, width: 40, height: 40, scored: false });
                 obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
@@ -107,7 +110,7 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             ctx.fillStyle = "black";
-            ctx.fillRect(0, groundLevel, canvas.width, 50);
+            ctx.fillRect(0, groundLevel, canvas.width, groundHeight);
 
             ctx.fillStyle = "blue";
             ctx.beginPath();
@@ -119,11 +122,15 @@
                 ctx.beginPath();
                 ctx.moveTo(obstacle.x, obstacle.y);
                 ctx.lineTo(obstacle.x + obstacle.width, obstacle.y);
-                ctx.lineTo(obstacle.x + obstacle.width / 2, obstacle.y - obstacle.height);
+                ctx.lineTo(obstacle.x + obstacle.width / 2, obstacle.
+
+> Nikolay Zverev:
+y - obstacle.height);
                 ctx.fill();
             }
         }
-function gameLoop() {
+
+        function gameLoop() {
             update();
             draw();
             requestAnimationFrame(gameLoop);
