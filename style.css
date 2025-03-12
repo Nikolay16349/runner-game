@@ -1,17 +1,20 @@
 body {
-    text-align: center;
-    background: lightblue;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: lightblue;
+    flex-direction: column;
 }
 
 canvas {
-    background: white;
-    display: block;
-    margin: auto;
+    background-color: white;
     border: 2px solid black;
 }
 
 #jumpButton {
-    position: absolute;
+    position: fixed;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
@@ -22,6 +25,7 @@ canvas {
     border: none;
     border-radius: 10px;
     cursor: pointer;
+    display: block;
 }
 
 #jumpButton:active {
