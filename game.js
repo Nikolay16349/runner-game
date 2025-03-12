@@ -21,7 +21,7 @@ let gameSpeed = 3;
 let gravity = 0.5;
 let jumpPower = -10;
 let obstacleTimer = 0;
-let obstacleInterval = 100;
+let obstacleInterval = 150; // Увеличил расстояние между препятствиями
 let score = 0;
 
 // Обновляем счетчик очков
@@ -38,7 +38,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 // Обработчик для телефона (Кнопка)
-document.getElementById("jumpButton").addEventListener("touchstart", () => {
+document.getElementById("jumpButton").addEventListener("click", () => {
     if (!player.jumping) {
         player.dy = jumpPower;
         player.jumping = true;
@@ -61,17 +61,17 @@ function update() {
     for (let i = 0; i < obstacles.length; i++) {
         obstacles[i].x -= gameSpeed;
 
-        // Проверяем столкновение (корректный расчет)
-        let dx = player.x - obstacles[i].x;
-        let dy = player.y - (obstacles[i].y - 15);
-        let distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < player.radius + 15) {
+        // Проверяем столкновение (правильная проверка)
+        if (
+            player.x + player.radius > obstacles[i].x &&
+            player.x - player.radius < obstacles[i].x + obstacles[i].width &&
+            player.y + player.radius > obstacles[i].y - obstacles[i].height
+        ) {
             alert(`Game Over! Ваши очки: ${score}`);
             document.location.reload();
         }
 
-        // Если игрок прошел препятствие, прибавляем очки (правильная проверка)
+        // Если игрок прошел препятствие, прибавляем очки
         if (obstacles[i].x + obstacles[i].width < player.x && !obstacles[i].scored) {
             score++;
             updateScore();
@@ -87,7 +87,7 @@ function update() {
     // Удаляем препятствия, которые вышли за экран
     obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
 
-    // Создаём препятствия (правильная генерация)
+    // Создаём препятствия
     if (obstacleTimer <= 0) {
         obstacles.push({ 
             x: canvas.width, 
