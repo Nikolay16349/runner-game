@@ -6,7 +6,7 @@ canvas.height = window.innerHeight * 0.5;
 
 const groundLevel = canvas.height - 50;
 
-// Персонаж (синий круг)
+// Персонаж
 let player = { 
     x: 50, 
     y: groundLevel - 15, 
@@ -61,23 +61,23 @@ function update() {
     for (let i = 0; i < obstacles.length; i++) {
         obstacles[i].x -= gameSpeed;
 
-        // Проверяем столкновение
-        let dx = Math.abs(player.x - obstacles[i].x);
-        let dy = Math.abs(player.y - (obstacles[i].y - 15));
+        // Проверяем столкновение (корректный расчет)
+        let dx = player.x - obstacles[i].x;
+        let dy = player.y - (obstacles[i].y - 15);
         let distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < player.radius + 15) {
-            alert("Game Over! Ваши очки: " + score);
+            alert(`Game Over! Ваши очки: ${score}`);
             document.location.reload();
         }
 
-        // Если игрок прошел препятствие, добавляем очки
+        // Если игрок прошел препятствие, прибавляем очки (правильная проверка)
         if (obstacles[i].x + obstacles[i].width < player.x && !obstacles[i].scored) {
             score++;
             updateScore();
             obstacles[i].scored = true;
 
-            // Каждые 10 препятствий увеличиваем скорость
+            // Каждые 10 очков игра ускоряется
             if (score % 10 === 0) {
                 gameSpeed += 0.5;
             }
@@ -87,7 +87,7 @@ function update() {
     // Удаляем препятствия, которые вышли за экран
     obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
 
-    // Создаём препятствия
+    // Создаём препятствия (правильная генерация)
     if (obstacleTimer <= 0) {
         obstacles.push({ 
             x: canvas.width, 
@@ -105,17 +105,17 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Рисуем черную "землю"
+    // Черная "земля"
     ctx.fillStyle = "black";
     ctx.fillRect(0, groundLevel, canvas.width, 50);
 
-    // Рисуем персонажа (синий круг)
+    // Персонаж (синий круг)
     ctx.fillStyle = "blue";
     ctx.beginPath();
     ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
     ctx.fill();
 
-    // Рисуем препятствия (черные треугольники)
+    // Препятствия (черные треугольники)
     ctx.fillStyle = "black";
     for (let obstacle of obstacles) {
         ctx.beginPath();
