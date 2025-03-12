@@ -93,5 +93,10 @@ function gameLoop() {
     draw();
     requestAnimationFrame(gameLoop);
 }
-
+document.getElementById("jumpButton").addEventListener("click", () => {
+    if (!player.jumping) {
+        player.dy = jumpPower;
+        player.jumping = true;
+    }
+});
 gameLoop();
