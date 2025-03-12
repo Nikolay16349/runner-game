@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Runner Game</title>
     <style>
         * {
@@ -19,6 +19,7 @@
             overflow: hidden;
             flex-direction: column;
             position: relative;
+            touch-action: manipulation;
         }
         canvas {
             background-color: white;
@@ -128,13 +129,16 @@
 
             ctx.fillStyle = "blue";
             ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius, 0, Math.
-PI * 2);
+ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.fillStyle = "red";
+            ctx.fillStyle = "black";
             for (let obstacle of obstacles) {
-                ctx.fillRect(obstacle.x, groundLevel - obstacle.height, obstacle.width, obstacle.height);
+                ctx.beginPath();
+                ctx.moveTo(obstacle.x, groundLevel);
+                ctx.lineTo(obstacle.x + obstacle.width, groundLevel);
+                ctx.lineTo(obstacle.x + obstacle.width / 2, groundLevel - obstacle.height);
+                ctx.fill();
             }
         }
 
@@ -158,6 +162,10 @@ PI * 2);
                 player.dy = jumpPower;
                 player.jumping = true;
             }
+        });
+
+        document.addEventListener("gesturestart", (e) => {
+            e.preventDefault();
         });
     </script>
 </body>
