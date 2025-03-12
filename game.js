@@ -1,8 +1,8 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth * 0.9;
-canvas.height = window.innerHeight * 0.5;
+canvas.width = 800;
+canvas.height = 300;
 
 const groundLevel = canvas.height - 50;
 
@@ -18,10 +18,10 @@ let player = {
 // Настройки
 let obstacles = [];
 let gameSpeed = 3;
-let gravity = 0.5;
+let gravity = 0.4;
 let jumpPower = -10;
 let obstacleTimer = 0;
-let obstacleInterval = 150; // Увеличил расстояние между препятствиями
+let obstacleInterval = 120;
 let score = 0;
 
 // Обновляем счетчик очков
@@ -61,7 +61,7 @@ function update() {
     for (let i = 0; i < obstacles.length; i++) {
         obstacles[i].x -= gameSpeed;
 
-        // Проверяем столкновение (правильная проверка)
+        // Проверяем столкновение
         if (
             player.x + player.radius > obstacles[i].x &&
             player.x - player.radius < obstacles[i].x + obstacles[i].width &&
@@ -126,17 +126,10 @@ function draw() {
     }
 }
 
-// Ограничение FPS для плавности
-let lastTime = 0;
-const fps = 60;
-const frameDuration = 1000 / fps;
-
-function gameLoop(timestamp) {
-    if (timestamp - lastTime >= frameDuration) {
-        update();
-        draw();
-        lastTime = timestamp;
-    }
+// Запуск анимации
+function gameLoop() {
+    update();
+    draw();
     requestAnimationFrame(gameLoop);
 }
 
