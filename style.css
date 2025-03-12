@@ -25,9 +25,9 @@ canvas {
     bottom: 10%;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 32px;
-    width: 60px;
-    height: 60px;
+    font-size: 24px;
+    width: 120px;
+    height: 120px;
     background: red;
     color: white;
     border: none;
