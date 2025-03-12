@@ -38,6 +38,7 @@ canvas {
     align-items: center;
     justify-content: center;
     font-weight: bold;
+    text-align: center;
 }
 
 #score {
