@@ -9,3 +9,21 @@ canvas {
     margin: auto;
     border: 2px solid black;
 }
+
+#jumpButton {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 30px;
+    font-size: 20px;
+    background-color: #ff4500;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+#jumpButton:active {
+    background-color: #d63b00;
+}
