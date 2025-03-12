@@ -1,13 +1,16 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-canvas.width = 800;
-canvas.height = 300;
+// Адаптация под размер экрана
+canvas.width = window.innerWidth * 0.9;
+canvas.height = window.innerHeight * 0.5;
+
+const groundLevel = canvas.height - 50;
 
 // Персонаж
 let player = { 
     x: 50, 
-    y: 200, 
+    y: groundLevel - 30, 
     width: 30, 
     height: 30, 
     dy: 0, 
@@ -19,9 +22,8 @@ let obstacles = [];
 let gameSpeed = 3;
 let gravity = 0.5;
 let jumpPower = -10;
-let groundLevel = canvas.height - 50;
 let obstacleTimer = 0;
-let obstacleInterval = 120; // Увеличенное расстояние между препятствиями
+let obstacleInterval = 100; // Увеличенное расстояние между препятствиями
 
 // Обработчик для ПК (Пробел)
 document.addEventListener("keydown", (e) => {
@@ -97,9 +99,17 @@ function draw() {
     }
 }
 
-function gameLoop() {
-    update();
-    draw();
+// Ограничение FPS для плавности
+let lastTime = 0;
+const fps = 60;
+const frameDuration = 1000 / fps;
+
+function gameLoop(timestamp) {
+    if (timestamp - lastTime >= frameDuration) {
+        update();
+        draw();
+        lastTime = timestamp;
+    }
     requestAnimationFrame(gameLoop);
 }
 
