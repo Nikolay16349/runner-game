@@ -15,8 +15,8 @@ let player = {
 
 let obstacles = [];
 let gameSpeed = 3;
-let gravity = 0.4;
-let jumpPower = -8;
+let gravity = 0.5;
+let jumpPower = -10;
 let groundLevel = 200;
 
 document.addEventListener("keydown", (e) => {
@@ -31,9 +31,9 @@ function update() {
     player.y += player.dy;
     player.dy += gravity;
 
-    // Если персонаж касается земли, сбрасываем прыжок
-    if (player.y >= groundLevel) {
-        player.y = groundLevel;
+    // Корректируем приземление, если персонаж ниже земли
+    if (player.y + player.height >= canvas.height - 50) {
+        player.y = canvas.height - 50 - player.height; // Ставим на землю
         player.dy = 0;
         player.jumping = false;
     }
@@ -69,6 +69,10 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Рисуем землю
+    ctx.fillStyle = "green";
+    ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+
     // Рисуем персонажа
     ctx.fillStyle = "red";
     ctx.fillRect(player.x, player.y, player.width, player.height);
@@ -86,4 +90,3 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-gameLoop();
