@@ -18,14 +18,23 @@
             background-color: white;
             overflow: hidden;
             flex-direction: column;
+            position: relative;
         }
         canvas {
             background-color: white;
             display: block;
         }
-        #jumpButton {
+        #groundContainer {
             position: absolute;
-            bottom: 20px;
+            bottom: 0;
+            width: 100%;
+            height: 30%;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #jumpButton {
             width: 120px;
             height: 120px;
             border-radius: 50%;
@@ -41,26 +50,28 @@
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
-    <button id="jumpButton">ПРЫЖОК</button>
-    
+    <div id="groundContainer">
+        <button id="jumpButton">ПРЫЖОК</button>
+    </div>
+
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            canvas.height = window.innerHeight * 0.7; // Поле теперь занимает верхнюю 70% экрана
         }
 
         window.addEventListener("resize", resizeCanvas);
         resizeCanvas();
 
-        const groundHeight = 100;
-        const groundLevel = canvas.height - groundHeight; // Подняли землю
+        const groundHeight = canvas.height * 0.15;
+        const groundLevel = canvas.height - groundHeight;
 
         let player = { x: 80, y: groundLevel - 30, radius: 30, dy: 0, jumping: false };
         let obstacles = [];
-        let gameSpeed = 5; // Увеличил начальную скорость
+        let gameSpeed = 5;
         let gravity = 0.6;
         let jumpPower = -14;
         let obstacleTimer = 0;
@@ -91,7 +102,7 @@
                 if (obstacles[i].x + obstacles[i].width < player.x && !obstacles[i].scored) {
                     score++;
                     obstacles[i].scored = true;
-                    if (score % 5 === 0) { // Ускорение каждые 5 очков
+                    if (score % 5 === 0) {
                         gameSpeed += 1;
                     }
                 }
@@ -117,7 +128,8 @@
             ctx.fillRect(0, groundLevel, canvas.width, groundHeight);
 
             ctx.fillStyle = "blue";
-            ctx.beginPath();
+            ctx.
+beginPath();
             ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
             ctx.fill();
 
@@ -125,7 +137,7 @@
             for (let obstacle of obstacles) {
                 ctx.beginPath();
                 ctx.moveTo(obstacle.x, obstacle.y);
-ctx.lineTo(obstacle.x + obstacle.width, obstacle.y);
+                ctx.lineTo(obstacle.x + obstacle.width, obstacle.y);
                 ctx.lineTo(obstacle.x + obstacle.width / 2, obstacle.y - obstacle.height);
                 ctx.fill();
             }
