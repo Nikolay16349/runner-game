@@ -89,13 +89,18 @@ function update() {
 
     // Создаём препятствия
     if (obstacleTimer <= 0) {
+        let minGap = 150; // Минимальное расстояние между препятствиями
+        let maxGap = 300; // Максимальное расстояние
+        let randomGap = minGap + Math.random() * (maxGap - minGap);
+        
         obstacles.push({ 
-            x: canvas.width, 
+            x: canvas.width + randomGap, 
             y: groundLevel, 
             width: 30, 
             height: 30, 
             scored: false 
         });
+
         obstacleTimer = obstacleInterval;
     } else {
         obstacleTimer--;
