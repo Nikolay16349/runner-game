@@ -4,6 +4,7 @@ const ctx = canvas.getContext("2d");
 canvas.width = 800;
 canvas.height = 300;
 
+// Персонаж
 let player = { 
     x: 50, 
     y: 200, 
@@ -13,11 +14,13 @@ let player = {
     jumping: false 
 };
 
+// Настройки
 let obstacles = [];
 let gameSpeed = 3;
 let gravity = 0.5;
 let jumpPower = -10;
-let groundLevel = 200;
+let groundLevel = canvas.height - 50;
+let obstacleSpawnCooldown = 100; // Увеличенный интервал появления препятствий
 
 document.addEventListener("keydown", (e) => {
     if (e.code === "Space" && !player.jumping) {
@@ -31,9 +34,9 @@ function update() {
     player.y += player.dy;
     player.dy += gravity;
 
-    // Корректируем приземление, если персонаж ниже земли
-    if (player.y + player.height >= canvas.height - 50) {
-        player.y = canvas.height - 50 - player.height; // Ставим на землю
+    // Ограничение, чтобы не проваливался под землю
+    if (player.y + player.height >= groundLevel) {
+        player.y = groundLevel - player.height;
         player.dy = 0;
         player.jumping = false;
     }
@@ -60,9 +63,12 @@ function update() {
         }
     }
 
-    // Создаём препятствия
-    if (Math.random() < 0.02) {
-        obstacles.push({ x: canvas.width, y: groundLevel, width: 20, height: 30 });
+    // Создаём препятствия реже (увеличенный интервал)
+    if (obstacleSpawnCooldown <= 0) {
+        obstacles.push({ x: canvas.width, y: groundLevel - 30, width: 20, height: 30 });
+        obstacleSpawnCooldown = 150; // Большее расстояние между препятствиями
+    } else {
+        obstacleSpawnCooldown--;
     }
 }
 
@@ -71,7 +77,7 @@ function draw() {
 
     // Рисуем землю
     ctx.fillStyle = "green";
-    ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+    ctx.fillRect(0, groundLevel, canvas.width, 50);
 
     // Рисуем персонажа
     ctx.fillStyle = "red";
@@ -90,3 +96,4 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
+gameLoop();
