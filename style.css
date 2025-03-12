@@ -1,33 +1,38 @@
-body {
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: lightblue;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: #eee;
 }
 
 canvas {
-    background-color: white;
+    width: 90vw;
+    height: 50vh;
+    display: block;
+    background: white;
     border: 2px solid black;
 }
 
 #jumpButton {
     position: fixed;
-    bottom: 20px;
+    bottom: 10%;
     left: 50%;
     transform: translateX(-50%);
+    font-size: 24px;
     padding: 15px 30px;
-    font-size: 20px;
-    background-color: #ff4500;
+    background: red;
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    display: block;
-}
-
-#jumpButton:active {
-    background-color: #d63b00;
+    touch-action: manipulation; /* Убирает задержку на мобильных */
 }
