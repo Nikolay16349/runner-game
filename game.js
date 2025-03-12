@@ -24,7 +24,7 @@ let obstacleTimer = 0;
 let obstacleInterval = 120;
 let score = 0;
 
-// Обновляем счетчик очков (исправлена ошибка в шаблонной строке)
+// Обновляем счетчик очков
 function updateScore() {
     document.getElementById("score").textContent = Очки: ${score};
 }
@@ -61,14 +61,15 @@ function update() {
     for (let i = 0; i < obstacles.length; i++) {
         obstacles[i].x -= gameSpeed;
 
-        // Проверяем столкновение
+        // Проверяем столкновение (исправлена ошибка)
         if (
             player.x + player.radius > obstacles[i].x &&
             player.x - player.radius < obstacles[i].x + obstacles[i].width &&
             player.y + player.radius > obstacles[i].y - obstacles[i].height
         ) {
             alert(`Game Over! Ваши очки: ${score}`);
-            document.location.reload();
+            location.reload();
+            return;
         }
 
         // Если игрок прошел препятствие, прибавляем очки
@@ -87,10 +88,10 @@ function update() {
     // Удаляем препятствия, которые вышли за экран
     obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
 
-    // Создаём препятствия
+    // Создаём препятствия (исправлен расчёт расстояния)
     if (obstacleTimer <= 0) {
-        let minGap = 200; // Минимальное расстояние между препятствиями (увеличено)
-        let maxGap = 400; // Максимальное расстояние
+        let minGap = 250; // Увеличено
+        let maxGap = 450; // Увеличено
         let randomGap = minGap + Math.random() * (maxGap - minGap);
         
         obstacles.push({ 
