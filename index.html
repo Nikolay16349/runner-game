@@ -90,6 +90,10 @@
         const playerImage = new Image();
         playerImage.src = "https://cdn.pixabay.com/photo/2024/02/06/12/28/ai-generated-8556930_1280.png";
 
+        // Загружаем изображение куста
+        const bushImage = new Image();
+        bushImage.src = "70252718-3EB3-4EAF-93A9-3AE544BE094D.png"; // Локальный файл
+
         function update() {
             player.y += player.dy;
             player.dy += gravity;
@@ -118,7 +122,12 @@
                 let minGap = 180;
                 let maxGap = 350;
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
-                obstacles.push({ x: canvas.width + randomGap, y: groundLevel - 50, width: 50, height: 50 });
+                obstacles.push({ 
+                    x: canvas.width + randomGap, 
+                    y: groundLevel - 70, // Поднял куст выше для корректного отображения
+                    width: 80, 
+                    height: 70 
+                });
                 obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
@@ -135,14 +144,9 @@
             // Отрисовываем персонажа
             ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
-            // Отрисовываем препятствия (чёрные треугольники)
-            ctx.fillStyle = "black";
+            // Отрисовываем кусты вместо треугольников
             for (let obstacle of obstacles) {
-                ctx.beginPath();
-                ctx.moveTo(obstacle.x, groundLevel);
-                ctx.lineTo(obstacle.x + obstacle.width, groundLevel);
-                ctx.lineTo(obstacle.x + obstacle.width / 2, groundLevel - obstacle.height);
-                ctx.fill();
+                ctx.drawImage(bushImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
             }
         }
 
