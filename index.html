@@ -106,10 +106,20 @@
 
             for (let i = 0; i < obstacles.length; i++) {
                 obstacles[i].x -= gameSpeed;
+
+                // Хитбокс препятствия (уменьшенный)
+                let hitbox = {
+                    x: obstacles[i].x + 10, // Смещаем хитбокс внутрь
+                    y: obstacles[i].y + 10,
+                    width: obstacles[i].width - 20, // Уменьшаем ширину
+                    height: obstacles[i].height - 20 // Уменьшаем высоту
+                };
+
+                // Проверка столкновения с уменьшенным хитбоксом
                 if (
-                    player.x + player.width > obstacles[i].x &&
-                    player.x < obstacles[i].x + obstacles[i].width &&
-                    player.y + player.height > obstacles[i].y - obstacles[i].height
+                    player.x + player.width > hitbox.x &&
+                    player.x < hitbox.x + hitbox.width &&
+                    player.y + player.height > hitbox.y
                 ) {
                     alert("Game Over!");
                     document.location.reload();
@@ -124,14 +134,14 @@
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
                 obstacles.push({ 
                     x: canvas.width + randomGap, 
-                    y: groundLevel - 60, // Чуть выше земли
+                    y: groundLevel - 60, 
                     width: 80, 
                     height: 60 
                 });
                 obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
-}
+            }
         }
 
         function draw() {
@@ -165,7 +175,7 @@
                 jumpCount++;
 
                 if (jumpCount % 6 === 0) {
-                    gameSpeed += 1; // Увеличиваем скорость каждые 6 прыжков
+                    gameSpeed += 1;
                 }
             }
         });
