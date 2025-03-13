@@ -84,11 +84,11 @@
         let jumpPower = -14;
         let obstacleTimer = 0;
         let obstacleInterval = 80;
-        let jumpCount = 0; // Количество прыжков
+        let jumpCount = 0;
 
         // Фон
         const backgroundImage = new Image();
-        backgroundImage.src = "B642F208-B80B-4031-B205-6B9C4CC95C23.jpeg"; // Используем загруженное изображение
+        backgroundImage.src = "https://i.imgur.com/NuG9S8q.jpeg"; // Загруженный фон (замени на свой URL)
         let backgroundX = 0;
         let backgroundSpeed = 2;
 
@@ -113,9 +113,9 @@
             for (let i = 0; i < obstacles.length; i++) {
                 obstacles[i].x -= gameSpeed;
                 if (
-                    player.x + player.width - 20 > obstacles[i].x && // Уменьшаем хитбокс
-                    player.x + 20 < obstacles[i].x + obstacles[i].width &&
-                    player.y + player.height - 20 > obstacles[i].y
+                    player.x + player.width - 30 > obstacles[i].x &&
+                    player.x + 30 < obstacles[i].x + obstacles[i].width &&
+                    player.y + player.height - 30 > obstacles[i].y
                 ) {
                     alert("Game Over!");
                     document.location.reload();
@@ -128,15 +128,14 @@
                 let minGap = 180;
                 let maxGap = 350;
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
-                obstacles.push({ x: canvas.width + randomGap, y: groundLevel - 60, width: 80, height: 60 });
+                obstacles.push({ x: canvas.width + randomGap, y: groundLevel - 50, width: 70, height: 50 });
                 obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
             }
 
-            // Увеличиваем скорость каждые 6 прыжков
             if (jumpCount >= 6) {
-                gameSpeed += 1;
+                gameSpeed += 0.5; 
                 jumpCount = 0; 
             }
 
@@ -161,7 +160,7 @@
             // Отрисовываем персонажа
             ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
-            // Отрисовываем препятствия (кусты)
+            // Отрисовываем препятствия
             for (let obstacle of obstacles) {
                 ctx.drawImage(bushImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
             }
