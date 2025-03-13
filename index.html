@@ -69,17 +69,36 @@
         const groundHeight = canvas.height * 0.2;
         const groundLevel = canvas.height - groundHeight;
 
-        let player = { x: 80, y: groundLevel - 40, width: 60, height: 60, dy: 0, jumping: false };
+        // Загрузка спрайтов анимации лягушки
+        const frogFrames = [
+            "frog_frame_0.png",
+            "frog_frame_1.png",
+            "frog_frame_2.png",
+            "frog_frame_3.png",
+            "frog_frame_4.png"
+        ].map(src => {
+            let img = new Image();
+            img.src = src;
+            return img;
+        });
+
+        let player = {
+            x: 80,
+            y: groundLevel - 80,
+            width: 80, 
+            height: 80, 
+            dy: 0,
+            jumping: false,
+            frameIndex: 0,
+            frameCounter: 0
+        };
+
         let obstacles = [];
         let gameSpeed = 6;
         let gravity = 0.6;
         let jumpPower = -14;
         let obstacleTimer = 0;
         let obstacleInterval = 80;
-
-        // Загружаем изображение персонажа
-        const playerImage = new Image();
-        playerImage.src = "https://cdn.pixabay.com/photo/2024/02/06/12/28/ai-generated-8556930_1280.png";
 
         function update() {
             player.y += player.dy;
@@ -114,19 +133,22 @@
             } else {
                 obstacleTimer--;
             }
+
+            // Обновление анимации лягушки
+            player.frameCounter++;
+            if (player.frameCounter % 5 === 0) {
+            player.frameIndex = (player.frameIndex + 1) % frogFrames.length;
+            }
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Отрисовываем землю
             ctx.fillStyle = "black";
             ctx.fillRect(0, groundLevel, canvas.width, groundHeight);
 
-            // Отрисовываем персонажа
-            ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+            ctx.drawImage(frogFrames[player.frameIndex], player.x, player.y, player.width, player.height);
 
-            // Отрисовываем препятствия (чёрные треугольники)
             ctx.fillStyle = "black";
             for (let obstacle of obstacles) {
                 ctx.beginPath();
