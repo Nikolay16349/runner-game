@@ -71,7 +71,7 @@
 
         let player = { 
             x: 80, 
-            y: groundLevel - 100, // Четко на земле
+            y: groundLevel - 80, 
             width: 100,  
             height: 100, 
             dy: 0, 
@@ -84,7 +84,7 @@
         let jumpPower = -14;
         let obstacleTimer = 0;
         let obstacleInterval = 80;
-        let jumps = 0; // Счетчик прыжков
+        let jumpCount = 0;
 
         // Загружаем изображение персонажа
         const playerImage = new Image();
@@ -92,7 +92,7 @@
 
         // Загружаем изображение куста
         const bushImage = new Image();
-        bushImage.src = "70252718-3EB3-4EAF-93A9-3AE544BE094D.png"; // Локальный файл
+        bushImage.src = "https://gas-kvas.com/uploads/posts/2023-02/1676434620_gas-kvas-com-p-kustik-detskii-risunok-3.jpg";
 
         function update() {
             player.y += player.dy;
@@ -124,14 +124,14 @@
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
                 obstacles.push({ 
                     x: canvas.width + randomGap, 
-                    y: groundLevel - 70, // Поднял куст выше для корректного отображения
+                    y: groundLevel - 60, // Чуть выше земли
                     width: 80, 
-                    height: 70 
+                    height: 60 
                 });
                 obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
-            }
+}
         }
 
         function draw() {
@@ -144,7 +144,7 @@
             // Отрисовываем персонажа
             ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
-            // Отрисовываем кусты вместо треугольников
+            // Отрисовываем препятствия (кусты)
             for (let obstacle of obstacles) {
                 ctx.drawImage(bushImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
             }
@@ -158,23 +158,29 @@
 
         gameLoop();
 
-        function jump() {
+        document.addEventListener("keydown", (e) => {
+            if (e.code === "Space" && !player.jumping) {
+                player.dy = jumpPower;
+                player.jumping = true;
+                jumpCount++;
+
+                if (jumpCount % 6 === 0) {
+                    gameSpeed += 1; // Увеличиваем скорость каждые 6 прыжков
+                }
+            }
+        });
+
+        document.getElementById("jumpButton").addEventListener("click", () => {
             if (!player.jumping) {
                 player.dy = jumpPower;
                 player.jumping = true;
-                jumps++;
+                jumpCount++;
 
-                if (jumps % 6 === 0) {
-                    gameSpeed += 1; // Ускоряем игру каждые 6 прыжков
+                if (jumpCount % 6 === 0) {
+                    gameSpeed += 1;
                 }
             }
-        }
-
-        document.addEventListener("keydown", (e) => {
-            if (e.code === "Space") jump();
         });
-
-        document.getElementById("jumpButton").addEventListener("click", jump);
 
         document.addEventListener("gesturestart", (e) => {
             e.preventDefault();
