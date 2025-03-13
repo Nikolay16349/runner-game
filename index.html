@@ -69,7 +69,7 @@
         const groundHeight = canvas.height * 0.2;
         const groundLevel = canvas.height - groundHeight;
 
-        let player = { x: 80, y: groundLevel - 60, width: 60, height: 60, dy: 0, jumping: false };
+        let player = { x: 80, y: groundLevel - 40, width: 60, height: 60, dy: 0, jumping: false };
         let obstacles = [];
         let gameSpeed = 6;
         let gravity = 0.6;
@@ -77,13 +77,9 @@
         let obstacleTimer = 0;
         let obstacleInterval = 80;
 
-        // Загружаем изображение персонажа (лягушки)
+        // Загружаем изображение персонажа
         const playerImage = new Image();
         playerImage.src = "https://cdn.pixabay.com/photo/2024/02/06/12/28/ai-generated-8556930_1280.png";
-
-        // Загружаем куст (с сервера)
-        const obstacleImage = new Image();
-        obstacleImage.src = "https://upload.wikimedia.org/wikipedia/commons/3/3d/Arbusto.png"; // Временная ссылка на куст
 
         function update() {
             player.y += player.dy;
@@ -113,7 +109,7 @@
                 let minGap = 180;
                 let maxGap = 350;
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
-                obstacles.push({ x: canvas.width + randomGap, y: groundLevel - 50, width: 80, height: 50 });
+                obstacles.push({ x: canvas.width + randomGap, y: groundLevel, width: 50, height: 50 });
                 obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
@@ -130,9 +126,14 @@
             // Отрисовываем персонажа
             ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
-            // Отрисовываем кусты (препятствия)
+            // Отрисовываем препятствия (чёрные треугольники)
+            ctx.fillStyle = "black";
             for (let obstacle of obstacles) {
-                ctx.drawImage(obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                ctx.beginPath();
+                ctx.moveTo(obstacle.x, groundLevel);
+                ctx.lineTo(obstacle.x + obstacle.width, groundLevel);
+                ctx.lineTo(obstacle.x + obstacle.width / 2, groundLevel - obstacle.height);
+                ctx.fill();
             }
         }
 
