@@ -69,7 +69,15 @@
         const groundHeight = canvas.height * 0.2;
         const groundLevel = canvas.height - groundHeight;
 
-        let player = { x: 80, y: groundLevel - 40, width: 60, height: 60, dy: 0, jumping: false };
+        let player = { 
+            x: 80, 
+            y: groundLevel - 80, // Поднял персонажа выше, чтобы он не проваливался
+            width: 100,  // Увеличил ширину 
+            height: 100, // Увеличил высоту 
+            dy: 0, 
+            jumping: false 
+        };
+
         let obstacles = [];
         let gameSpeed = 6;
         let gravity = 0.6;
@@ -122,7 +130,7 @@
             // Отрисовываем землю
             ctx.fillStyle = "black";
             ctx.fillRect(0, groundLevel, canvas.width, groundHeight);
-
+            
             // Отрисовываем персонажа
             ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
