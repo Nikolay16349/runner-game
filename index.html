@@ -81,10 +81,7 @@
         const groundHeight = canvas.height * 0.2;
         const groundLevel = canvas.height - groundHeight;
 
-        const playerImage = new Image();
-        playerImage.src = "https://cdn.pixabay.com/photo/2024/02/06/12/28/ai-generated-8556930_1280.png";
-
-        let player = { x: 80, y: groundLevel - 40, width: 60, height: 60, dy: 0, jumping: false };
+        let player = { x: 80, y: groundLevel - 40, radius: 30, dy: 0, jumping: false, angle: 0, scale: 1 };
         let obstacles = [];
         let gameSpeed = 6;
         let gravity = 0.6;
@@ -93,30 +90,43 @@
         let obstacleInterval = 80;
         let score = 0;
 
+        // Загружаем изображение персонажа
+        const playerImage = new Image();
+        playerImage.src = "https://cdn.pixabay.com/photo/2024/02/06/12/28/ai-generated-8556930_1280.png";
+
         function update() {
             player.y += player.dy;
             player.dy += gravity;
 
-            if (player.y + player.height >= groundLevel) {
-                player.y = groundLevel - player.height;
+            // Добавляем эффект "прыгающего" движения
+            if (!player.jumping) {
+                player.angle += 0.1;
+                player.scale = 1 + Math.sin(player.angle) * 0.05;
+            }
+
+            // Ограничиваем движение
+            if (player.y + player.radius >= groundLevel) {
+                player.y = groundLevel - player.radius;
                 player.dy = 0;
                 player.jumping = false;
+                player.angle = 0; // Сбрасываем угол при приземлении
+            } else {
+                player.angle = 0.2; // Небольшой наклон в прыжке
             }
 
             for (let i = 0; i < obstacles.length; i++) {
                 obstacles[i].x -= gameSpeed;
-                
                 if (
-                    player.x + player.width > obstacles[i].x &&
-                    player.x < obstacles[i].x + obstacles[i].width &&
-                    player.y + player.height > groundLevel - obstacles[i].height
+                    player.x + player.radius > obstacles[i].x &&
+                    player.x - player.radius < obstacles[i].x + obstacles[i].width &&
+                    player.y + player.radius > obstacles[i].y - obstacles[i].height
                 ) {
                     alert(`Game Over! Очки: ${score}`);
                     document.location.reload();
                 }
 
                 if (obstacles[i].x + obstacles[i].width < player.x && !obstacles[i].scored) {
-                    score++;
+score++;
                     scoreDisplay.textContent = ${score};
                     obstacles[i].scored = true;
                     if (score % 5 === 0) {
@@ -129,15 +139,9 @@
 
             if (obstacleTimer <= 0) {
                 let minGap = 180;
-let maxGap = 350;
+                let maxGap = 350;
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
-                obstacles.push({ 
-                    x: canvas.width + randomGap, 
-                    y: groundLevel, 
-                    width: 50, 
-                    height: 50, 
-                    scored: false 
-                });
+                obstacles.push({ x: canvas.width + randomGap, y: groundLevel, width: 50, height: 50, scored: false });
                 obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
@@ -147,11 +151,19 @@ let maxGap = 350;
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Отрисовываем землю
             ctx.fillStyle = "black";
             ctx.fillRect(0, groundLevel, canvas.width, groundHeight);
 
-            ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+            // Отрисовываем персонажа с эффектом движения
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.angle);
+            ctx.scale(player.scale, player.scale);
+            ctx.drawImage(playerImage, -player.radius, -player.radius, player.radius * 2, player.radius * 2);
+            ctx.restore();
 
+            // Отрисовываем препятствия (чёрные треугольники)
             ctx.fillStyle = "black";
             for (let obstacle of obstacles) {
                 ctx.beginPath();
