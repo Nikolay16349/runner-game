@@ -106,7 +106,7 @@
                 if (
                     player.x + player.radius > obstacles[i].x &&
                     player.x - player.radius < obstacles[i].x + obstacles[i].width &&
-                    player.y + player.radius > obstacles[i].y - obstacles[i].height
+                    player.y + player.radius > groundLevel - obstacles[i].height
                 ) {
                     alert(`Game Over! Очки: ${score}`);
                     document.location.reload();
@@ -128,8 +128,13 @@
                 let minGap = 180;
                 let maxGap = 350;
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
-                obstacles.push({ x: canvas.
-width + randomGap, y: groundLevel, width: 50, height: 50, scored: false });
+                obstacles.push({ 
+                    x: canvas.width + randomGap, 
+                    y: groundLevel, 
+                    width: 50, 
+                    height: 50, 
+                    scored: false 
+                });
                 obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
