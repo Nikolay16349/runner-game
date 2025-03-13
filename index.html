@@ -15,7 +15,6 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: white;
             overflow: hidden;
             flex-direction: column;
             position: relative;
@@ -23,6 +22,11 @@
         }
         canvas {
             display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
         }
         #groundContainer {
             position: absolute;
@@ -58,7 +62,7 @@
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight * 0.75;
+            canvas.height = window.innerHeight;
         }
 
         window.addEventListener("resize", resizeCanvas);
@@ -131,6 +135,7 @@
             } else {
                 obstacleTimer--;
             }
+
             if (jumpCount >= 6) {
                 gameSpeed += 0.5; 
                 jumpCount = 0; 
@@ -146,7 +151,7 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Отрисовываем фон
+            // Отрисовываем фон на весь экран
             ctx.drawImage(backgroundImage, backgroundX, 0, canvas.width, canvas.height);
             ctx.drawImage(backgroundImage, backgroundX + canvas.width, 0, canvas.width, canvas.height);
 
