@@ -30,9 +30,10 @@
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 24px;
+            font-size: 40px;
             font-weight: bold;
             color: black;
+            font-family: 'Courier New', Courier, monospace;
         }
         #groundContainer {
             position: absolute;
@@ -58,7 +59,7 @@
     </style>
 </head>
 <body>
-    <div id="score">Очки: 0</div>
+    <div id="score">0</div>
     <canvas id="gameCanvas"></canvas>
     <div id="groundContainer">
         <button id="jumpButton">ПРЫЖОК</button>
@@ -112,7 +113,7 @@
 
                 if (obstacles[i].x + obstacles[i].width < player.x && !obstacles[i].scored) {
                     score++;
-                    scoreDisplay.textContent = Очки: ${score};
+                    scoreDisplay.textContent = ${score};
                     obstacles[i].scored = true;
                     if (score % 5 === 0) {
                         gameSpeed += 1;
@@ -126,8 +127,9 @@
                 let minGap = 180;
                 let maxGap = 350;
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
-                obstacles.push({ x: canvas.width + randomGap, y: groundLevel, width: 50, height: 50, scored: false });
-obstacleTimer = obstacleInterval;
+                obstacles.push({ x: canvas.
+width + randomGap, y: groundLevel, width: 50, height: 50, scored: false });
+                obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
             }
