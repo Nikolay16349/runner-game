@@ -25,6 +25,15 @@
             background-color: white;
             display: block;
         }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: black;
+        }
         #groundContainer {
             position: absolute;
             bottom: 0;
@@ -49,6 +58,7 @@
     </style>
 </head>
 <body>
+    <div id="score">Очки: 0</div>
     <canvas id="gameCanvas"></canvas>
     <div id="groundContainer">
         <button id="jumpButton">ПРЫЖОК</button>
@@ -57,6 +67,7 @@
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
+        const scoreDisplay = document.getElementById("score");
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -101,6 +112,7 @@
 
                 if (obstacles[i].x + obstacles[i].width < player.x && !obstacles[i].scored) {
                     score++;
+                    scoreDisplay.textContent = Очки: ${score};
                     obstacles[i].scored = true;
                     if (score % 5 === 0) {
                         gameSpeed += 1;
@@ -115,7 +127,7 @@
                 let maxGap = 350;
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
                 obstacles.push({ x: canvas.width + randomGap, y: groundLevel, width: 50, height: 50, scored: false });
-                obstacleTimer = obstacleInterval;
+obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
             }
@@ -129,7 +141,7 @@
 
             ctx.fillStyle = "blue";
             ctx.beginPath();
-ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
             ctx.fill();
 
             ctx.fillStyle = "black";
