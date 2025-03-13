@@ -71,7 +71,7 @@
 
         let player = { 
             x: 80, 
-            y: groundLevel - 80, 
+            y: groundLevel - 100, 
             width: 100,  
             height: 100, 
             dy: 0, 
@@ -84,13 +84,19 @@
         let jumpPower = -14;
         let obstacleTimer = 0;
         let obstacleInterval = 80;
-        let jumpCount = 0;
+        let jumpCount = 0; // Количество прыжков
 
-        // Загружаем изображение персонажа
+        // Фон
+        const backgroundImage = new Image();
+        backgroundImage.src = "B642F208-B80B-4031-B205-6B9C4CC95C23.jpeg"; // Используем загруженное изображение
+        let backgroundX = 0;
+        let backgroundSpeed = 2;
+
+        // Лягушка
         const playerImage = new Image();
         playerImage.src = "https://cdn.pixabay.com/photo/2024/02/06/12/28/ai-generated-8556930_1280.png";
 
-        // Загружаем изображение куста
+        // Куст
         const bushImage = new Image();
         bushImage.src = "https://gas-kvas.com/uploads/posts/2023-02/1676434620_gas-kvas-com-p-kustik-detskii-risunok-3.jpg";
 
@@ -106,20 +112,10 @@
 
             for (let i = 0; i < obstacles.length; i++) {
                 obstacles[i].x -= gameSpeed;
-
-                // Хитбокс препятствия (уменьшенный)
-                let hitbox = {
-                    x: obstacles[i].x + 10, // Смещаем хитбокс внутрь
-                    y: obstacles[i].y + 10,
-                    width: obstacles[i].width - 20, // Уменьшаем ширину
-                    height: obstacles[i].height - 20 // Уменьшаем высоту
-                };
-
-                // Проверка столкновения с уменьшенным хитбоксом
                 if (
-                    player.x + player.width > hitbox.x &&
-                    player.x < hitbox.x + hitbox.width &&
-                    player.y + player.height > hitbox.y
+                    player.x + player.width - 20 > obstacles[i].x && // Уменьшаем хитбокс
+                    player.x + 20 < obstacles[i].x + obstacles[i].width &&
+                    player.y + player.height - 20 > obstacles[i].y
                 ) {
                     alert("Game Over!");
                     document.location.reload();
@@ -132,20 +128,31 @@
                 let minGap = 180;
                 let maxGap = 350;
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
-                obstacles.push({ 
-                    x: canvas.width + randomGap, 
-                    y: groundLevel - 60, 
-                    width: 80, 
-                    height: 60 
-                });
+                obstacles.push({ x: canvas.width + randomGap, y: groundLevel - 60, width: 80, height: 60 });
                 obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
+            }
+
+            // Увеличиваем скорость каждые 6 прыжков
+            if (jumpCount >= 6) {
+                gameSpeed += 1;
+                jumpCount = 0; 
+            }
+
+            // Прокрутка фона
+            backgroundX -= backgroundSpeed;
+            if (backgroundX <= -canvas.width) {
+                backgroundX = 0;
             }
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Отрисовываем фон
+            ctx.drawImage(backgroundImage, backgroundX, 0, canvas.width, canvas.height);
+            ctx.drawImage(backgroundImage, backgroundX + canvas.width, 0, canvas.width, canvas.height);
 
             // Отрисовываем землю
             ctx.fillStyle = "black";
@@ -173,10 +180,6 @@
                 player.dy = jumpPower;
                 player.jumping = true;
                 jumpCount++;
-
-                if (jumpCount % 6 === 0) {
-                    gameSpeed += 1;
-                }
             }
         });
 
@@ -185,10 +188,6 @@
                 player.dy = jumpPower;
                 player.jumping = true;
                 jumpCount++;
-
-                if (jumpCount % 6 === 0) {
-                    gameSpeed += 1;
-                }
             }
         });
 
