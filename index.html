@@ -71,9 +71,9 @@
 
         let player = { 
             x: 80, 
-            y: groundLevel - 80, // Поднял персонажа выше, чтобы он не проваливался
-            width: 100,  // Увеличил ширину 
-            height: 100, // Увеличил высоту 
+            y: groundLevel - 80, // Точно на уровне земли
+            width: 80,  
+            height: 80, 
             dy: 0, 
             jumping: false 
         };
@@ -85,9 +85,13 @@
         let obstacleTimer = 0;
         let obstacleInterval = 80;
 
-        // Загружаем изображение персонажа
+        // Загружаем изображение лягушки
         const playerImage = new Image();
         playerImage.src = "https://cdn.pixabay.com/photo/2024/02/06/12/28/ai-generated-8556930_1280.png";
+
+        // Загружаем изображение куста (препятствие)
+        const obstacleImage = new Image();
+        obstacleImage.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Simple_shrub_cartoon.svg/512px-Simple_shrub_cartoon.svg.png";
 
         function update() {
             player.y += player.dy;
@@ -117,7 +121,12 @@
                 let minGap = 180;
                 let maxGap = 350;
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
-                obstacles.push({ x: canvas.width + randomGap, y: groundLevel, width: 50, height: 50 });
+                obstacles.push({ 
+                    x: canvas.width + randomGap, 
+                    y: groundLevel - 50, // Совпадает с землёй
+                    width: 60, 
+                    height: 50 
+                });
                 obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
@@ -130,18 +139,13 @@
             // Отрисовываем землю
             ctx.fillStyle = "black";
             ctx.fillRect(0, groundLevel, canvas.width, groundHeight);
-            
-            // Отрисовываем персонажа
+
+            // Отрисовываем лягушку
             ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
-            // Отрисовываем препятствия (чёрные треугольники)
-            ctx.fillStyle = "black";
+            // Отрисовываем препятствия (кусты)
             for (let obstacle of obstacles) {
-                ctx.beginPath();
-                ctx.moveTo(obstacle.x, groundLevel);
-                ctx.lineTo(obstacle.x + obstacle.width, groundLevel);
-                ctx.lineTo(obstacle.x + obstacle.width / 2, groundLevel - obstacle.height);
-                ctx.fill();
+                ctx.drawImage(obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
             }
         }
 
