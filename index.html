@@ -77,13 +77,13 @@
         let obstacleTimer = 0;
         let obstacleInterval = 80;
 
-        // Загружаем изображение персонажа
+        // Загружаем изображение персонажа (лягушки)
         const playerImage = new Image();
         playerImage.src = "https://cdn.pixabay.com/photo/2024/02/06/12/28/ai-generated-8556930_1280.png";
 
-        // Загружаем изображение куста (препятствия)
+        // Загружаем куст (с сервера)
         const obstacleImage = new Image();
-        obstacleImage.src = "34C4D38F-6EBD-4F31-9068-EAC48A351CE8.png";  // Используем загруженный файл
+        obstacleImage.src = "https://upload.wikimedia.org/wikipedia/commons/3/3d/Arbusto.png"; // Временная ссылка на куст
 
         function update() {
             player.y += player.dy;
@@ -113,7 +113,7 @@
                 let minGap = 180;
                 let maxGap = 350;
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
-                obstacles.push({ x: canvas.width + randomGap, y: groundLevel - 50, width: 70, height: 50 });
+                obstacles.push({ x: canvas.width + randomGap, y: groundLevel - 50, width: 80, height: 50 });
                 obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
@@ -130,7 +130,7 @@
             // Отрисовываем персонажа
             ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
-            // Отрисовываем препятствия (кусты)
+            // Отрисовываем кусты (препятствия)
             for (let obstacle of obstacles) {
                 ctx.drawImage(obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
             }
