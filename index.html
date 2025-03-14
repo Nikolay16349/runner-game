@@ -22,8 +22,12 @@
             touch-action: manipulation;
         }
         canvas {
-            background-color: white;
             display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 75vh;
         }
         #groundContainer {
             position: absolute;
@@ -82,17 +86,18 @@
         let gameSpeed = 6;
         let gravity = 0.6;
         let jumpPower = -14;
-        let obstacleTimer = 0;
+        let obstacleTimer = 200;
         let obstacleInterval = 80;
-        let jumpCount = 0;
+        let jumps = 0;
 
-        // Загружаем изображение персонажа
         const playerImage = new Image();
         playerImage.src = "https://cdn.pixabay.com/photo/2024/02/06/12/28/ai-generated-8556930_1280.png";
 
-        // Загружаем изображение куста
-        const bushImage = new Image();
-        bushImage.src = "https://gas-kvas.com/uploads/posts/2023-02/1676434620_gas-kvas-com-p-kustik-detskii-risunok-3.jpg";
+        const obstacleImage = new Image();
+        obstacleImage.src = "https://w7.pngwing.com/pngs/904/8/png-transparent-dragon-cartoon-illustration-hand-painted-small-dragon-watercolor-painting-comics-dragon.png";
+
+        const backgroundImage = new Image();
+        backgroundImage.src = "https://img.freepik.com/free-vector/flat-geometric-forest-with-lake_23-2147541650.jpg";
 
         function update() {
             player.y += player.dy;
@@ -107,19 +112,10 @@
             for (let i = 0; i < obstacles.length; i++) {
                 obstacles[i].x -= gameSpeed;
 
-                // Хитбокс препятствия (уменьшенный)
-                let hitbox = {
-                    x: obstacles[i].x + 10, // Смещаем хитбокс внутрь
-                    y: obstacles[i].y + 10,
-                    width: obstacles[i].width - 20, // Уменьшаем ширину
-                    height: obstacles[i].height - 20 // Уменьшаем высоту
-                };
-
-                // Проверка столкновения с уменьшенным хитбоксом
                 if (
-                    player.x + player.width > hitbox.x &&
-                    player.x < hitbox.x + hitbox.width &&
-                    player.y + player.height > hitbox.y
+                    player.x + player.width * 0.7 > obstacles[i].x &&
+                    player.x < obstacles[i].x + obstacles[i].width * 0.7 &&
+                    player.y + player.height > obstacles[i].y - obstacles[i].height * 0.7
                 ) {
                     alert("Game Over!");
                     document.location.reload();
@@ -132,31 +128,30 @@
                 let minGap = 180;
                 let maxGap = 350;
                 let randomGap = minGap + Math.random() * (maxGap - minGap);
-                obstacles.push({ 
-                    x: canvas.width + randomGap, 
-                    y: groundLevel - 60, 
-                    width: 80, 
-                    height: 60 
-                });
+                obstacles.push({ x: canvas.width + randomGap, y: groundLevel, width: 80, height: 80 });
                 obstacleTimer = obstacleInterval;
             } else {
                 obstacleTimer--;
+            }
+
+            if (jumps % 6 === 0 && jumps > 0) {
+                gameSpeed += 0.5;
+                jumps = 0;
             }
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Отрисовываем землю
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+
             ctx.fillStyle = "black";
             ctx.fillRect(0, groundLevel, canvas.width, groundHeight);
 
-            // Отрисовываем персонажа
             ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
-            // Отрисовываем препятствия (кусты)
             for (let obstacle of obstacles) {
-                ctx.drawImage(bushImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                ctx.drawImage(obstacleImage, obstacle.x, groundLevel - obstacle.height, obstacle.width, obstacle.height);
             }
         }
 
@@ -172,11 +167,7 @@
             if (e.code === "Space" && !player.jumping) {
                 player.dy = jumpPower;
                 player.jumping = true;
-                jumpCount++;
-
-                if (jumpCount % 6 === 0) {
-                    gameSpeed += 1;
-                }
+                jumps++;
             }
         });
 
@@ -184,11 +175,7 @@
             if (!player.jumping) {
                 player.dy = jumpPower;
                 player.jumping = true;
-                jumpCount++;
-
-                if (jumpCount % 6 === 0) {
-                    gameSpeed += 1;
-                }
+                jumps++;
             }
         });
 
@@ -198,4 +185,3 @@
     </script>
 </body>
 </html>
-
