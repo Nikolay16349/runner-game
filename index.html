@@ -1,114 +1,167 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Runner Mini-Game</title>
-<style>
-html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#0f0f12; color:#fff; font-family:Arial, sans-serif; }
-canvas { display:block; width:100%; height:100%; }
-#overlay, #gameOver {
-  position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  background: rgba(0,0,0,0.5); text-align:center; gap:12px;
-}
-button { padding:12px 18px; border:none; border-radius:10px; background:#6c5ce7; color:white; font-weight:600; cursor:pointer; }
-.hidden { display:none; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Runner Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: white;
+            overflow: hidden;
+            flex-direction: column;
+            position: relative;
+            touch-action: manipulation;
+        }
+        canvas {
+            background-color: white;
+            display: block;
+        }
+        #groundContainer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 25%;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #jumpButton {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: blue;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-<canvas id="gameCanvas"></canvas>
+    <canvas id="gameCanvas"></canvas>
+    <div id="groundContainer">
+        <button id="jumpButton">ПРЫЖОК</button>
+    </div>
 
-<div id="overlay">
-  <h1>Runner</h1>
-  <p>Тапни/нажми, чтобы прыгнуть. Избегай препятствий!</p>
-  <button id="startBtn">Играть</button>
-</div>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-<div id="gameOver" class="hidden">
-  <h2>Game Over</h2>
-  <p id="finalScore">Счёт: 0</p>
-  <p id="bestScore">Рекорд: 0</p>
-  <button id="restartBtn">Ещё раз</button>
-</div>
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight * 0.75;
+        }
 
-<script>
-window.addEventListener('load', function(){
-  const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d');
-  const overlay = document.getElementById('overlay');
-  const startBtn = document.getElementById('startBtn');
-  const gameOverEl = document.getElementById('gameOver');
-  const restartBtn = document.getElementById('restartBtn');
-  const finalScoreEl = document.getElementById('finalScore');
-  const bestScoreEl = document.getElementById('bestScore');
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
 
-  let player, obstacles=[], score=0, best=Number(localStorage.getItem('runner_best_score')||0), speed=5, running=false;
+        const groundHeight = canvas.height * 0.2;
+        const groundLevel = canvas.height - groundHeight;
 
-  function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
+        let player = { x: 80, y: groundLevel - 40, width: 60, height: 60, dy: 0, jumping: false };
+        let obstacles = [];
+        let gameSpeed = 6;
+        let gravity = 0.6;
+        let jumpPower = -14;
+        let obstacleTimer = 0;
+        let obstacleInterval = 80;
 
-  function resetGame(){
-    player = {x:50, y:canvas.height-100, w:50, h:50, vy:0, onGround:true};
-    obstacles=[];
-    score=0;
-    speed=5;
-    running=true;
-  }
+        // Загружаем изображение персонажа
+        const playerImage = new Image();
+        playerImage.src = "https://cdn.pixabay.com/photo/2024/02/06/12/28/ai-generated-8556930_1280.png";
 
-  function startGame(){ overlay.classList.add('hidden'); gameOverEl.classList.add('hidden'); resetGame(); }
-  function endGame(){ running=false; best=Math.max(best,score); localStorage.setItem('runner_best_score',best); finalScoreEl.textContent='Счёт: '+score; bestScoreEl.textContent='Рекорд: '+best; gameOverEl.classList.remove('hidden'); }
+        function update() {
+            player.y += player.dy;
+            player.dy += gravity;
 
-  startBtn.addEventListener('click', startGame);
-  restartBtn.addEventListener('click', startGame);
+            if (player.y + player.height >= groundLevel) {
+                player.y = groundLevel - player.height;
+                player.dy = 0;
+                player.jumping = false;
+            }
 
-  document.addEventListener('keydown', e=>{ if(e.code==='Space'||e.code==='ArrowUp') jump(); });
-  canvas.addEventListener('touchstart', jump);
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].x -= gameSpeed;
+                if (
+                    player.x + player.width > obstacles[i].x &&
+                    player.x < obstacles[i].x + obstacles[i].width &&
+                    player.y + player.height > obstacles[i].y - obstacles[i].height
+                ) {
+                    alert("Game Over!");
+                    document.location.reload();
+                }
+            }
 
-  function jump(){ if(player.onGround){ player.vy=-12; player.onGround=false; } }
+            obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
 
-  function spawnObstacle(){
-    const size = 50;
-    obstacles.push({x:canvas.width, y:canvas.height-100, w:size, h:size});
-  }
+            if (obstacleTimer <= 0) {
+                let minGap = 180;
+                let maxGap = 350;
+                let randomGap = minGap + Math.random() * (maxGap - minGap);
+                obstacles.push({ x: canvas.width + randomGap, y: groundLevel, width: 50, height: 50 });
+                obstacleTimer = obstacleInterval;
+            } else {
+                obstacleTimer--;
+            }
+        }
 
-  let spawnTimer=0;
-  function update(dt){
-    if(!running) return;
-    player.vy += 0.5; // gravity
-    player.y += player.vy;
-    if(player.y+player.h>=canvas.height-50){ player.y=canvas.height-50-player.h; player.vy=0; player.onGround=true; }
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    spawnTimer+=dt;
-    if(spawnTimer>1000){ spawnTimer=0; spawnObstacle(); }
+            // Отрисовываем землю
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, groundLevel, canvas.width, groundHeight);
 
-    obstacles.forEach(o=>o.x-=speed);
-    obstacles = obstacles.filter(o=>o.x+o.w>0);
+            // Отрисовываем персонажа
+            ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
-    // collision
-    for(let o of obstacles) if(player.x<o.x+o.w && player.x+player.w>o.x && player.y<o.y+o.h && player.y+player.h>o.y){ endGame(); }
+            // Отрисовываем препятствия (чёрные треугольники)
+            ctx.fillStyle = "black";
+            for (let obstacle of obstacles) {
+                ctx.beginPath();
+                ctx.moveTo(obstacle.x, groundLevel);
+                ctx.lineTo(obstacle.x + obstacle.width, groundLevel);
+                ctx.lineTo(obstacle.x + obstacle.width / 2, groundLevel - obstacle.height);
+                ctx.fill();
+            }
+        }
 
-    score+=0.1;
-  }
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
 
-  function draw(){
-    ctx.fillStyle='#0f0f12'; ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#4fc3f7'; ctx.fillRect(player.x,player.y,player.w,player.h);
-    ctx.fillStyle='#ff7675';
-    obstacles.forEach(o=>ctx.fillRect(o.x,o.y,o.w,o.h));
-    ctx.fillStyle='white'; ctx.font='20px Arial'; ctx.fillText('Счёт: '+Math.floor(score),10,30); ctx.fillText('Рекорд: '+best,10,60);
-  }
+        gameLoop();
 
-  let last=performance.now();
-  function loop(){
-    let now=performance.now();
-    let dt=now-last; last=now;
-    update(dt);
-    draw();
-    requestAnimationFrame(loop);
-  }
-  loop();
-});
-</script>
+        document.addEventListener("keydown", (e) => {
+            if (e.code === "Space" && !player.jumping) {
+                player.dy = jumpPower;
+                player.jumping = true;
+            }
+        });
+
+        document.getElementById("jumpButton").addEventListener("click", () => {
+            if (!player.jumping) {
+                player.dy = jumpPower;
+                player.jumping = true;
+            }
+        });
+
+        document.addEventListener("gesturestart", (e) => {
+            e.preventDefault();
+        });
+    </script>
 </body>
 </html>
