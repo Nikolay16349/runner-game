@@ -66,7 +66,7 @@ let player = {
     height: 100,
     dy: 0,
     jumping: false,
-    jumpTimer: 0
+    scale: 1
 };
 
 const playerImage = new Image();
@@ -90,12 +90,10 @@ let score = 0;
 
 const scoreElem = document.getElementById("score");
 
-// Плавный прыжок
 function jump(){
     if(!player.jumping){
         player.dy = jumpPower;
         player.jumping = true;
-        player.jumpTimer = 0;
     }
 }
 
@@ -103,58 +101,80 @@ document.getElementById("jumpButton").addEventListener("click", jump);
 document.addEventListener("keydown", e => { if(e.code === "Space") jump(); });
 
 function update(){
-    // движение игрока с плавным гравитационным ускорением
+    // движение игрока с гравитацией
     player.dy += gravity;
     player.y += player.dy;
+
+    // анимация прыжка: сжимается при прыжке
+    player.scale = player.jumping ? 0.9 : 1;
 
     if(player.y + player.height >= groundLevel){
         player.y = groundLevel - player.height;
         player.dy = 0;
         player.jumping = false;
+        player.scale = 1;
     }
 
     // препятствия
     obstacles.forEach(obs => {
         obs.x -= gameSpeed;
-        if(player.x + player.width > obs.x &&
-           player.x < obs.x + obs.width &&
-           player.y + player.height > obs.y){
+        // хитбокс меньше, чем изображение
+        const hitbox = {
+            x: obs.x + 10,
+            y: obs.y + 10,
+            width: obs.width - 20,
+            height: obs.height - 20
+        };
+        if(player.x + player.width > hitbox.x &&
+           player.x < hitbox.x + hitbox.width &&
+           player.y + player.height > hitbox.y){
             alert("Game Over! Очки: " + score);
             document.location.reload();
         }
     });
+
     obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
 
     // генерация препятствий
     if(obstacleTimer <= 0){
         const gap = 200 + Math.random() * 200;
-        obstacles.push({ x: width + gap, y: groundLevel - 60, width: 80, height: 60 });
+        obstacles.push({ x: width + gap, y: groundLevel - 60, width: 80, height: 60, alpha: 0 });
         obstacleTimer = obstacleInterval;
         score++;
         scoreElem.textContent = "Очки: " + score;
-
-        // увеличение скорости каждые 5 очков
         if(score % 5 === 0) gameSpeed += 0.5;
     } else {
         obstacleTimer--;
     }
 
+    // плавное появление препятствий
+    obstacles.forEach(obs => {
+        if(obs.alpha < 1) obs.alpha += 0.05;
+    });
+
     // фон
     backgroundX -= backgroundSpeed;
     if(backgroundX <= -width) backgroundX = 0;
-}
-
+    }
 function draw(){
     ctx.clearRect(0,0,width,height);
-    // фон с параллаксом
+    // фон
     ctx.drawImage(backgroundImage, backgroundX, 0, width, height);
     ctx.drawImage(backgroundImage, backgroundX + width, 0, width, height);
 
-    // игрок
-    ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+    // игрок с анимацией прыжка
+    ctx.save();
+    ctx.translate(player.x + player.width/2, player.y + player.height/2);
+    ctx.scale(player.scale, player.scale);
+    ctx.drawImage(playerImage, -player.width/2, -player.height/2, player.width, player.height);
+    ctx.restore();
 
-    // препятствия
-    obstacles.forEach(obs => ctx.drawImage(bushImage, obs.x, obs.y, obs.width, obs.height));
+    // препятствия с плавным появлением
+    obstacles.forEach(obs => {
+        ctx.globalAlpha = obs.alpha;
+        ctx.drawImage(bushImage, obs.x, obs.y, obs.width, obs.height);
+        ctx.globalAlpha = 1;
+    });
 }
 
 function loop(){
