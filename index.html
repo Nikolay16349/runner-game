@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Runner Game</title>
+<title>Runner Game с рекордами</title>
 <style>
 body, html { margin:0; padding:0; overflow:hidden; font-family:sans-serif; }
 canvas { display:block; background:#fff; }
@@ -31,6 +31,15 @@ canvas { display:block; background:#fff; }
     color: #333;
     text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 }
+#topScores {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    color: #555;
+    text-align: center;
+}
 #startMessage {
     position: absolute;
     top: 50%;
@@ -46,6 +55,7 @@ canvas { display:block; background:#fff; }
 
 <canvas id="gameCanvas"></canvas>
 <div id="score">Очки: 0</div>
+<div id="topScores">Топ рекордов:</div>
 <button id="jumpButton">ПРЫЖОК</button>
 <div id="startMessage">Нажмите ПРЫЖОК для старта</div>
 
@@ -99,7 +109,12 @@ let score = 0;
 let gameStarted = false;
 
 const scoreElem = document.getElementById("score");
+const topScoresElem = document.getElementById("topScores");
 const startMessage = document.getElementById("startMessage");
+
+// Загрузка рекордов из localStorage
+let scores = JSON.parse(localStorage.getItem('runnerScores') || '[]');
+updateTopScores();
 
 function jump(){
     if(!player.jumping){
@@ -115,6 +130,17 @@ function jump(){
 document.getElementById("jumpButton").addEventListener("click", jump);
 document.addEventListener("keydown", e => { if(e.code === "Space") jump(); });
 
+function updateTopScores(){
+    const top = scores.sort((a,b)=>b-a).slice(0,3);
+    topScoresElem.innerHTML = "Топ рекордов:<br>" + top.map((s,i)=>`${i+1}. ${s}`).join('<br>');
+}
+
+function saveScore(){
+    scores.push(score);
+    localStorage.setItem('runnerScores', JSON.stringify(scores));
+    updateTopScores();
+}
+
 function update(){
     player.dy += gravity;
     player.y += player.dy;
@@ -129,25 +155,20 @@ function update(){
         player.scale = 1;
     }
 
-    if(!gameStarted) return; // движение начинается только после прыжка
+    if(!gameStarted) return;
 
     // фон
     backgroundX -= backgroundSpeed;
     if(backgroundX <= -width) backgroundX = 0;
 
     // препятствия
-    obstacles.forEach(obs => {
+obstacles.forEach(obs => {
         obs.x -= gameSpeed;
-        // хитбокс меньше, чем изображение (уменьшаем по ширине и высоте)
-        const hitbox = {
-            x: obs.x + 20,
-            y: obs.y + 10,
-            width: obs.width - 40,
-            height: obs.height - 20
-        };
+        const hitbox = { x: obs.x + 20, y: obs.y + 10, width: obs.width-40, height: obs.height-20 };
         if(player.x + player.width > hitbox.x &&
            player.x < hitbox.x + hitbox.width &&
            player.y + player.height > hitbox.y){
+            saveScore();
             alert("Game Over! Очки: " + score);
             document.location.reload();
         }
@@ -156,7 +177,8 @@ function update(){
     obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
 
     // генерация препятствий
-    if(obstacleTimer <= 0){const gap = 200 + Math.random() * 200;
+    if(obstacleTimer <= 0){
+        const gap = 200 + Math.random() * 200;
         obstacles.push({ x: width + gap, y: groundLevel - 60, width: 80, height: 60, alpha: 0 });
         obstacleTimer = obstacleInterval;
         score++;
@@ -166,13 +188,11 @@ function update(){
         obstacleTimer--;
     }
 
-    // плавное появление препятствий
     obstacles.forEach(obs => { if(obs.alpha < 1) obs.alpha += 0.05; });
 }
 
 function draw(){
     ctx.clearRect(0,0,width,height);
-    // фон с параллаксом
     ctx.drawImage(backgroundImage, backgroundX, 0, width, height);
     ctx.drawImage(backgroundImage, backgroundX + width, 0, width, height);
 
