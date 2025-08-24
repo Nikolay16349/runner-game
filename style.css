@@ -1,54 +1,69 @@
-{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0f0f12;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Inter, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background: #eee;
+#gameCanvas {
+  display: block;
+  position: fixed;
+  left: 0; top: 0;
+  width: 100vw;
+  height: 100vh;
 }
 
-canvas {
-    display: block;
-    background: white;
-    border: 2px solid black;
+/* Overlays */
+#overlay, #gameOver {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(10, 10, 14, 0.6);
+  backdrop-filter: blur(2px);
+  text-align: center;
+  padding: 20px;
 }
 
-#jumpButton {
-    position: fixed;
-    bottom: 10%;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 24px;
-    width: 120px;
-    height: 120px;
-    background: red;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    touch-action: manipulation;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    text-align: center;
+#overlay h1 {
+  margin: 0 0 8px 0;
+  font-size: clamp(28px, 5vw, 48px);
+  letter-spacing: 1px;
 }
+#overlay p { margin: 0 0 16px 0; opacity: 0.9; }
 
-#score {
-    font-size: 24px;
-    position: fixed;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 10px;
+button {
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  background: #6c5ce7;
+  color: white;
+  transition: transform 0.1s ease, opacity 0.2s ease;
+}
+button:active { transform: scale(0.98); }
+.hidden { display: none; }
+
+/* HUD (рендерится в canvas — стиль здесь на будущее, если захочешь DOM-HUD) */
+#hud {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 12px;
+  font-weight: 700;
+  user-select: none;
+  pointer-events: none;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
 }
