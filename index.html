@@ -12,8 +12,7 @@ canvas { display:block; background:#fff; }
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
-    width: 120px;
-    height: 120px;
+    width: 120px; height: 120px;
     border-radius: 50%;
     background-color: #28a745;
     color: white;
@@ -32,6 +31,15 @@ canvas { display:block; background:#fff; }
     color: #333;
     text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 }
+#startMessage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    color: #333;
+    text-align: center;
+}
 </style>
 </head>
 <body>
@@ -39,6 +47,7 @@ canvas { display:block; background:#fff; }
 <canvas id="gameCanvas"></canvas>
 <div id="score">Очки: 0</div>
 <button id="jumpButton">ПРЫЖОК</button>
+<div id="startMessage">Нажмите ПРЫЖОК для старта</div>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
@@ -87,13 +96,19 @@ let jumpPower = -16;
 let obstacleTimer = 0;
 const obstacleInterval = 90;
 let score = 0;
+let gameStarted = false;
 
 const scoreElem = document.getElementById("score");
+const startMessage = document.getElementById("startMessage");
 
 function jump(){
     if(!player.jumping){
         player.dy = jumpPower;
         player.jumping = true;
+        if(!gameStarted){
+            gameStarted = true;
+            startMessage.style.display = 'none';
+        }
     }
 }
 
@@ -101,11 +116,10 @@ document.getElementById("jumpButton").addEventListener("click", jump);
 document.addEventListener("keydown", e => { if(e.code === "Space") jump(); });
 
 function update(){
-    // движение игрока с гравитацией
     player.dy += gravity;
     player.y += player.dy;
 
-    // анимация прыжка: сжимается при прыжке
+    // анимация прыжка
     player.scale = player.jumping ? 0.9 : 1;
 
     if(player.y + player.height >= groundLevel){
@@ -115,14 +129,20 @@ function update(){
         player.scale = 1;
     }
 
+    if(!gameStarted) return; // движение начинается только после прыжка
+
+    // фон
+    backgroundX -= backgroundSpeed;
+    if(backgroundX <= -width) backgroundX = 0;
+
     // препятствия
     obstacles.forEach(obs => {
         obs.x -= gameSpeed;
-        // хитбокс меньше, чем изображение
+        // хитбокс меньше, чем изображение (уменьшаем по ширине и высоте)
         const hitbox = {
-            x: obs.x + 10,
+            x: obs.x + 20,
             y: obs.y + 10,
-            width: obs.width - 20,
+            width: obs.width - 40,
             height: obs.height - 20
         };
         if(player.x + player.width > hitbox.x &&
@@ -136,8 +156,7 @@ function update(){
     obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
 
     // генерация препятствий
-    if(obstacleTimer <= 0){
-        const gap = 200 + Math.random() * 200;
+    if(obstacleTimer <= 0){const gap = 200 + Math.random() * 200;
         obstacles.push({ x: width + gap, y: groundLevel - 60, width: 80, height: 60, alpha: 0 });
         obstacleTimer = obstacleInterval;
         score++;
@@ -148,28 +167,23 @@ function update(){
     }
 
     // плавное появление препятствий
-    obstacles.forEach(obs => {
-        if(obs.alpha < 1) obs.alpha += 0.05;
-    });
+    obstacles.forEach(obs => { if(obs.alpha < 1) obs.alpha += 0.05; });
+}
 
-    // фон
-    backgroundX -= backgroundSpeed;
-    if(backgroundX <= -width) backgroundX = 0;
-    }
 function draw(){
     ctx.clearRect(0,0,width,height);
-    // фон
+    // фон с параллаксом
     ctx.drawImage(backgroundImage, backgroundX, 0, width, height);
     ctx.drawImage(backgroundImage, backgroundX + width, 0, width, height);
 
-    // игрок с анимацией прыжка
+    // игрок
     ctx.save();
     ctx.translate(player.x + player.width/2, player.y + player.height/2);
     ctx.scale(player.scale, player.scale);
     ctx.drawImage(playerImage, -player.width/2, -player.height/2, player.width, player.height);
     ctx.restore();
 
-    // препятствия с плавным появлением
+    // препятствия
     obstacles.forEach(obs => {
         ctx.globalAlpha = obs.alpha;
         ctx.drawImage(bushImage, obs.x, obs.y, obs.width, obs.height);
