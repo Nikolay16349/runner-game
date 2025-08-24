@@ -1,310 +1,163 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
-  <title>Runner Mini-Game</title>
-  <style>
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #0f0f12;
-      color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Inter, Arial, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    #gameCanvas {
-      display: block;
-      position: fixed;
-      left: 0; top: 0;
-      width: 100vw;
-      height: 100vh;
-    }
-
-    #overlay, #gameOver {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: rgba(10, 10, 14, 0.6);
-      backdrop-filter: blur(2px);
-      text-align: center;
-      padding: 20px;
-    }
-
-    #overlay h1 {
-      margin: 0 0 8px 0;
-      font-size: clamp(28px, 5vw, 48px);
-      letter-spacing: 1px;
-    }
-    #overlay p { margin: 0 0 16px 0; opacity: 0.9; }
-
-    button {
-      border: none;
-      padding: 12px 18px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 16px;
-      cursor: pointer;
-      background: #6c5ce7;
-      color: white;
-      transition: transform 0.1s ease, opacity 0.2s ease;
-    }
-    button:active { transform: scale(0.98); }
-    .hidden { display: none; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<title>Runner Mini-Game</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0f0f12;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Inter, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #gameCanvas {
+    display: block;
+    position: fixed;
+    left:0; top:0;
+    width: 100vw;
+    height: 100vh;
+  }
+  #overlay, #gameOver {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(10,10,14,0.6);
+    backdrop-filter: blur(2px);
+    text-align: center;
+    padding: 20px;
+  }
+  #overlay h1 { margin:0 0 8px 0; font-size:clamp(28px,5vw,48px); }
+  #overlay p { margin:0 0 16px 0; opacity:0.9; }
+  button {
+    border:none; padding:12px 18px; border-radius:10px; font-weight:600;
+    font-size:16px; cursor:pointer; background:#6c5ce7; color:white;
+    transition: transform 0.1s ease, opacity 0.2s ease;
+  }
+  button:active { transform: scale(0.98); }
+  .hidden { display:none; }
+</style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
+<canvas id="gameCanvas"></canvas>
 
-  <div id="overlay">
-    <h1 id="title">Runner</h1>
-    <p id="subtitle">Тапни/нажми, чтобы прыгнуть. Избегай препятствий!</p>
-    <button id="startBtn">Играть</button>
-  </div>
+<div id="overlay">
+  <h1>Runner</h1>
+  <p>Тапни/нажми, чтобы прыгнуть. Избегай препятствий!</p>
+  <button id="startBtn">Играть</button>
+</div>
 
-  <div id="gameOver" class="hidden">
-    <h2>Game Over</h2>
-    <p id="finalScore">Счёт: 0</p>
-    <p id="bestScore">Рекорд: 0</p>
-    <button id="restartBtn">Ещё раз</button>
-  </div>
+<div id="gameOver" class="hidden">
+  <h2>Game Over</h2>
+  <p id="finalScore">Счёт: 0</p>
+  <p id="bestScore">Рекорд: 0</p>
+  <button id="restartBtn">Ещё раз</button>
+</div>
 
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d", { alpha: false });
+<script>
+window.onload = function(){
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-    const overlay = document.getElementById("overlay");
-    const startBtn = document.getElementById("startBtn");
-    const gameOverEl = document.getElementById("gameOver");
-    const restartBtn = document.getElementById("restartBtn");
-    const finalScoreEl = document.getElementById("finalScore");
-    const bestScoreEl = document.getElementById("bestScore");
+const overlay = document.getElementById("overlay");
+const startBtn = document.getElementById("startBtn");
+const gameOverEl = document.getElementById("gameOver");
+const restartBtn = document.getElementById("restartBtn");
+const finalScoreEl = document.getElementById("finalScore");
+const bestScoreEl = document.getElementById("bestScore");
 
-    ["touchstart","touchmove","touchend"].forEach(ev => {
-      document.addEventListener(ev, (e) => {
-        if (e.target === canvas) e.preventDefault();
-      }, { passive: false });
-    });
+["touchstart","touchmove","touchend"].forEach(ev=>{
+  document.addEventListener(ev,e=>{
+    if(e.target===canvas)e.preventDefault();
+  },{passive:false});
+});
 
-    let groundHeight = 60;
-    const metrics = { playerW: 0, playerH: 0, obstacleW: 0, obstacleH: 0 };
+let groundHeight=60;
+const metrics={playerW:0,playerH:0,obstacleW:0,obstacleH:0};
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      groundHeight = Math.max(40, Math.floor(canvas.height * 0.06));
-      metrics.playerH = Math.max(40, Math.floor(canvas.height * 0.14));
-      metrics.playerW = Math.floor(metrics.playerH * 0.75);
-      metrics.obstacleH = Math.max(36, Math.floor(canvas.height * 0.12));
-      metrics.obstacleW = Math.max(24, Math.floor(metrics.obstacleH * 0.7));
-      if (player) {
-        player.h = metrics.playerH;
-        player.w = metrics.playerW;
-        player.y = groundY() - player.h;
-      }
-      obstacles.forEach(o => {
-        o.h = metrics.obstacleH;
-        o.w = metrics.obstacleW;
-        o.y = groundY() - o.h;
-      });
-    }
-    function groundY() { return canvas.height - groundHeight; }
+function resizeCanvas(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  groundHeight=Math.max(40,Math.floor(canvas.height*0.06));
+  metrics.playerH=Math.max(40,Math.floor(canvas.height*0.14));
+  metrics.playerW=Math.floor(metrics.playerH*0.75);
+  metrics.obstacleH=Math.max(36,Math.floor(canvas.height*0.12));
+  metrics.obstacleW=Math.max(24,Math.floor(metrics.obstacleH*0.7));
+  if(player){player.h=metrics.playerH; player.w=metrics.playerW; player.y=groundY()-player.h;}
+  obstacles.forEach(o=>{o.h=metrics.obstacleH; o.w=metrics.obstacleW; o.y=groundY()-o.h;});
+}
+function groundY(){return canvas.height-groundHeight;}
 
-    let player = null;
-    let obstacles = [];
-    let particles = [];
-    let running = false;
-    let gameOver = false;
-    let score = 0;
-    let best = Number(localStorage.getItem("runner_best_score") || 0);
-    let speed = 8;
-    let accel = 0.0008;
-    let spawnTimer = 0;
-    let nextSpawn = 900;
+let player=null, obstacles=[], particles=[];
+let running=false, gameOver=false, score=0, best=Number(localStorage.getItem("runner_best_score")||0);
+let speed=8, accel=0.0008, spawnTimer=0, nextSpawn=900;
 
-    function resetGame() {
-      running = false;
-      gameOver = false;
-      score = 0;
-      speed = 8;
-      spawnTimer = 0;
-      nextSpawn = 900 + Math.random() * 400;
-      player = {
-        x: Math.floor(canvas.width * 0.12),
-        y: 0,
-        w: metrics.playerW,
-        h: metrics.playerH,
-        vy: 0,
-        onGround: true,
-        color: "#4fc3f7"
-      };
-      player.y = groundY() - player.h;
-      obstacles = [];
-      particles = [];
-    }
+function resetGame(){
+  running=false; gameOver=false; score=0; speed=8; spawnTimer=0; nextSpawn=900+Math.random()*400;
+  player={x:Math.floor(canvas.width*0.12), y:0, w:metrics.playerW, h:metrics.playerH, vy:0, onGround:true, color:"#4fc3f7"};
+  player.y=groundY()-player.h; obstacles=[]; particles=[];
+}
 
-    function spawnObstacle() {
-      const h = metrics.obstacleH * (0.85 + Math.random() * 0.4);
-      const w = Math.max(metrics.obstacleW * (0.85 + Math.random() * 0.4), 18);
-      obstacles.push({ x: canvas.width + w, y: groundY() - h, w, h, color: "#ff7675" });
-    }
+function spawnObstacle(){
+  const h=metrics.obstacleH*(0.85+Math.random()*0.4);
+  const w=Math.max(metrics.obstacleW*(0.85+Math.random()*0.4),18);
+  obstacles.push({x:canvas.width+w, y:groundY()-h, w,h, color:"#ff7675"});
+}
 
-    function spawnDust(x, y, count=6) {
-      for (let i=0;i<count;i++) {
-        particles.push({ x, y, vx: (Math.random()*2-1)*1.2, vy: -Math.random()*2, life: 400+Math.random()*400, age: 0 });
-      }
-    }
+function spawnDust(x,y,count=6){
+  for(let i=0;i<count;i++)particles.push({x,y,vx:(Math.random()*2-1)*1.2,vy:-Math.random()*2,life:400+Math.random()*400,age:0});
+}
 
-    function jump() {
-      if (gameOver) return;
-      if (player.onGround) {
-        player.vy = -Math.max(14, Math.floor(canvas.height * 0.022));
-        player.onGround = false;
-        spawnDust(player.x + player.w*0.2, groundY());
-      }
-    }
+function jump(){if(gameOver)return; if(player.onGround){player.vy=-Math.max(14,Math.floor(canvas.height*0.022));player.onGround=false;spawnDust(player.x+player.w*0.2,groundY());}}
 
-    function restart() {
-      gameOverEl.classList.add("hidden");
-      overlay.classList.add("hidden");
-      resetGame();
-      running = true;
-    }
+function startGame(){overlay.classList.add("hidden"); resetGame(); running=true;}
+function restartGame(){gameOverEl.classList.add("hidden"); resetGame(); running=true;}
 
-    document.addEventListener("keydown", (e) => {
-      if (e.code === "Space" || e.code === "ArrowUp") {
-        if (!running && !gameOver) restart();
-        else if (gameOver) restart();
-        else jump();
-      }
-      if (e.code === "Enter" && (gameOver || !running)) restart();
-    });
+startBtn.addEventListener("click",startGame);
+restartBtn.addEventListener("click",restartGame);
 
-    let touchStartY = null;
-    canvas.addEventListener("touchstart", (e) => {
-      if (!running) { restart(); return; }
-      touchStartY = e.touches[0].clientY;
-      jump();
-    });
-    canvas.addEventListener("touchend", () => { touchStartY = null; });
+document.addEventListener("keydown",(e)=>{if(e.code==="Space"||e.code==="ArrowUp"){if(!running && !gameOver)startGame();else if(gameOver)restartGame();else jump();}if(e.code==="Enter"&&(gameOver||!running))restartGame();});
 
-    startBtn.addEventListener("click", restart);
-    restartBtn.addEventListener("click", restart);
+canvas.addEventListener("touchstart",(e)=>{if(!running){startGame();return;}jump();});
 
-    function drawBackground() {
-      const g = ctx.createLinearGradient(0,0,0,canvas.height);
-      g.addColorStop(0, "#0f0f12");
-      g.addColorStop(1, "#181820");
-      ctx.fillStyle = g;
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle = "#2a2a33";
-      ctx.fillRect(0, groundY(), canvas.width, groundHeight);
-      ctx.globalAlpha = 0.2;
-      ctx.fillStyle = "#ffffff";
-      const laneY = groundY() - Math.floor(groundHeight*0.5);
-      for (let x=0; x<canvas.width; x+= 60) {
-        ctx.fillRect(x + (-(performance.now()/10)%60), laneY, 30, 3);
-      }
-      ctx.globalAlpha = 1;
-    }
+function drawBackground(){
+  const g=ctx.createLinearGradient(0,0,0,canvas.height);
+  g.addColorStop(0,"#0f0f12"); g.addColorStop(1,"#181820");
+  ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="#2a2a33"; ctx.fillRect(0,groundY(),canvas.width,groundHeight);
+  ctx.globalAlpha=0.2; ctx.fillStyle="#fff";
+  const laneY=groundY()-Math.floor(groundHeight*0.5);
+  for(let x=0;x<canvas.width;x+=60){ctx.fillRect(x+(-(performance.now()/10)%60),laneY,30,3);}
+  ctx.globalAlpha=1;
+}
 
-    function drawPlayer() {
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.w, player.h);
-      ctx.fillStyle = "#001219";
-      ctx.fillRect(player.x + player.w*0.68, player.y + player.h*0.22, player.w*0.14, player.h*0.14);
-    }
+function drawPlayer(){ctx.fillStyle=player.color; ctx.fillRect(player.x,player.y,player.w,player.h); ctx.fillStyle="#001219"; ctx.fillRect(player.x+player.w*0.68,player.y+player.h*0.22,player.w*0.14,player.h*0.14);}
+function drawObstacles(){obstacles.forEach(o=>{ctx.fillStyle=o.color; ctx.fillRect(o.x,o.y,o.w,o.h);});}
+function drawParticles(dt){for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.age+=dt;p.x+=p.vx;p.y+=p.vy;p.vy+=0.02;const alpha=Math.max(0,1-p.age/p.life);ctx.globalAlpha=alpha*0.5;ctx.fillStyle="#ccc";ctx.fillRect(p.x,p.y,3,3);ctx.globalAlpha=1;if(p.age>=p.life)particles.splice(i,1);}}
+function drawHUD(){ctx.font=`bold ${Math.max(16,Math.floor(canvas.height*0.028))}px Inter, Arial, sans-serif`; ctx.fillStyle="white"; ctx.textBaseline="top"; ctx.fillText(`Счёт: ${Math.floor(score)}`,10,10); ctx.fillText(`Рекорд: ${Math.floor(best)}`,10,10+Math.max(20,Math.floor(canvas.height*0.035)));}
 
-    function drawObstacles() { obstacles.forEach(o => { ctx.fillStyle = o.color; ctx.fillRect(o.x, o.y, o.w, o.h); }); }
+function rectsIntersect(a,b){return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;}
 
-    function drawParticles(dt) {
-      for (let i=particles.length-1; i>=0; i--) {
-        const p = particles[i];
-        p.age += dt;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.02;
-        const alpha = Math.max(0, 1 - p.age / p.life);
-        ctx.globalAlpha = alpha * 0.5;
-        ctx.fillStyle = "#cccccc";
-        ctx.fillRect(p.x, p.y, 3, 3);
-        ctx.globalAlpha = 1;
-        if (p.age >= p.life) particles.splice(i,1);
-      }
-    }
-
-    function drawHUD() {
-      ctx.font = bold ${Math.max(16, Math.floor(canvas.height*0.028))}px Inter, Arial, sans-serif;
-      ctx.fillStyle = "white";
-      ctx.textBaseline = "top";
-      ctx.fillText(`Счёт: ${Math.floor(score)}`, 10, 10);
-      ctx.fillText(`Рекорд: ${Math.floor(best)}`, 10, 10 + Math.max(20, Math.floor(canvas.height*0.035)));
-    }
-
-    function rectsIntersect(a, b) { return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y; }
-
-    let last = performance.now();
-    function update(dt) {
-      if (!running) return;
-      speed += accel * dt;
-      score += dt * (speed * 0.06);
-      player.vy += Math.max(0.6, canvas.height * 0.0012);
-      player.y += player.vy;
-      if (player.y + player.h >= groundY()) {
-        player.y = groundY() - player.h;
-if (!player.onGround && player.vy > 0) spawnDust(player.x + player.w*0.2, groundY(), 10);
-        player.vy = 0;
-        player.onGround = true;
-      }
-      obstacles.forEach(o => { o.x -= speed; });
-      obstacles = obstacles.filter(o => o.x + o.w > -10);
-      spawnTimer += dt;
-      if (spawnTimer >= nextSpawn) {
-        spawnTimer = 0;
-        nextSpawn = 700 + Math.random() * 600 - Math.min(300, (speed-8)*15);
-        spawnObstacle();
-      }
-      for (let o of obstacles) { if (rectsIntersect(player, o)) { onGameOver(); break; } }
-    }
-
-    function onGameOver() {
-      running = false;
-      gameOver = true;
-      best = Math.max(best, Math.floor(score));
-      localStorage.setItem("runner_best_score", String(best));
-      finalScoreEl.textContent = Счёт: ${Math.floor(score)};
-      bestScoreEl.textContent = Рекорд: ${best};
-      gameOverEl.classList.remove("hidden");
-    }
-
-    function loop() {
-      const now = performance.now();
-      const dt = Math.min(32, now - last);
-      last = now;
-      drawBackground();
-      drawObstacles();
-      drawPlayer();
-      drawParticles(dt);
-      drawHUD();
-      update(dt);
-      requestAnimationFrame(loop);
-    }
-
-    resizeCanvas();
-    resetGame();
-    overlay.classList.remove("hidden");
-    window.addEventListener("resize", resizeCanvas);
-    window.addEventListener("orientationchange", () => setTimeout(resizeCanvas, 200));
-    loop();
-  </script>
-</body>
-</html>
+let last=performance.now();
+function update(dt){
+  if(!running)return;
+  speed+=accel*dt;
+  score+=dt*(speed*0.06);
+  player.vy+=Math.max(0.6,canvas.height*0.0012);
+  player.y+=player.vy;
+  if(player.y+player.h>=groundY()){player.y=groundY()-player.h; if(!player.onGround && player.vy>0)spawnDust(player.x+player.w*0.2,groundY(),10);player.vy=0;player.onGround=true;}
+  obstacles.forEach(o=>{o.x-=speed;}); obstacles=obstacles.filter(o=>o.x+o.w>-10);
+  spawnTimer+=dt;
+  if(spawnTimer>=nextSpawn){spawnTimer=0; nextSpawn=700+Math.random()*600-Math.min(300,(speed-8)*15); spawnObstacle();}
+  for(let o of obstacles){if(rectsIntersect(player,o)){gameOver=true; running=false; best=Math.max(best,Math.floor(score)); localStorage.setItem("runner_best_score",String(best)); finalScoreEl.textContent=`Счёт: ${Math.floor(score)}`; bestScoreEl.textContent=`Рекорд: ${best}`; game
