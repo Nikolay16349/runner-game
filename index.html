@@ -3,23 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Runner Game с рекордами</title>
+<title>Runner Game с топ рекордом</title>
 <style>
 body, html { margin:0; padding:0; overflow:hidden; font-family:sans-serif; }
 canvas { display:block; background:#fff; }
 #jumpButton {
-    position: absolute;
-    bottom: 30px;
+    position: fixed;
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    width: 120px; height: 120px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
-    background-color: #28a745;
-    color: white;
-    font-size: 20px;
+    background-color: rgba(40, 167, 69, 0.8);
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    z-index: 10;
 }
 #score {
     position: absolute;
@@ -31,7 +30,7 @@ canvas { display:block; background:#fff; }
     color: #333;
     text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 }
-#topScores {
+#topScore {
     position: absolute;
     top: 70px;
     left: 50%;
@@ -55,9 +54,9 @@ canvas { display:block; background:#fff; }
 
 <canvas id="gameCanvas"></canvas>
 <div id="score">Очки: 0</div>
-<div id="topScores">Топ рекордов:</div>
-<button id="jumpButton">ПРЫЖОК</button>
-<div id="startMessage">Нажмите ПРЫЖОК для старта</div>
+<div id="topScore">Лучший рекорд: 0</div>
+<button id="jumpButton"></button>
+<div id="startMessage">Нажмите на кнопку для старта</div>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
@@ -109,12 +108,13 @@ let score = 0;
 let gameStarted = false;
 
 const scoreElem = document.getElementById("score");
-const topScoresElem = document.getElementById("topScores");
+const topScoreElem = document.getElementById("topScore");
 const startMessage = document.getElementById("startMessage");
+const jumpButton = document.getElementById("jumpButton");
 
-// Загрузка рекордов из localStorage
-let scores = JSON.parse(localStorage.getItem('runnerScores') || '[]');
-updateTopScores();
+// Локальный лучший рекорд
+let bestScore = parseInt(localStorage.getItem('bestScore')) || 0;
+topScoreElem.textContent = "Лучший рекорд: " + bestScore;
 
 function jump(){
     if(!player.jumping){
@@ -127,25 +127,13 @@ function jump(){
     }
 }
 
-document.getElementById("jumpButton").addEventListener("click", jump);
+jumpButton.addEventListener("click", jump);
 document.addEventListener("keydown", e => { if(e.code === "Space") jump(); });
-
-function updateTopScores(){
-    const top = scores.sort((a,b)=>b-a).slice(0,3);
-    topScoresElem.innerHTML = "Топ рекордов:<br>" + top.map((s,i)=>`${i+1}. ${s}`).join('<br>');
-}
-
-function saveScore(){
-    scores.push(score);
-    localStorage.setItem('runnerScores', JSON.stringify(scores));
-    updateTopScores();
-}
 
 function update(){
     player.dy += gravity;
     player.y += player.dy;
 
-    // анимация прыжка
     player.scale = player.jumping ? 0.9 : 1;
 
     if(player.y + player.height >= groundLevel){
@@ -162,14 +150,18 @@ function update(){
     if(backgroundX <= -width) backgroundX = 0;
 
     // препятствия
-obstacles.forEach(obs => {
+    obstacles.forEach(obs => {
         obs.x -= gameSpeed;
         const hitbox = { x: obs.x + 20, y: obs.y + 10, width: obs.width-40, height: obs.height-20 };
         if(player.x + player.width > hitbox.x &&
            player.x < hitbox.x + hitbox.width &&
            player.y + player.height > hitbox.y){
-            saveScore();
-            alert("Game Over! Очки: " + score);
+    // Сохранение лучшего рекорда
+            if(score > bestScore){
+                bestScore = score;
+                localStorage.setItem('bestScore', bestScore);
+            }
+            alert("Game Over! Очки: " + score + "\nЛучший рекорд: " + bestScore);
             document.location.reload();
         }
     });
@@ -196,14 +188,12 @@ function draw(){
     ctx.drawImage(backgroundImage, backgroundX, 0, width, height);
     ctx.drawImage(backgroundImage, backgroundX + width, 0, width, height);
 
-    // игрок
     ctx.save();
     ctx.translate(player.x + player.width/2, player.y + player.height/2);
     ctx.scale(player.scale, player.scale);
     ctx.drawImage(playerImage, -player.width/2, -player.height/2, player.width, player.height);
     ctx.restore();
 
-    // препятствия
     obstacles.forEach(obs => {
         ctx.globalAlpha = obs.alpha;
         ctx.drawImage(bushImage, obs.x, obs.y, obs.width, obs.height);
