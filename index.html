@@ -2,78 +2,110 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Runner Game</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-    display:flex; justify-content:center; align-items:center;
-    height:100vh; overflow:hidden; flex-direction:column;
-    position:relative; touch-action: manipulation;
-}
-canvas { display:block; position:absolute; top:0; left:0; width:100vw; height:100vh; }
-#groundContainer {
-    position:absolute; bottom:0; width:100%; height:25%;
-    display:flex; justify-content:center; align-items:center;
-}
+body, html { margin:0; padding:0; overflow:hidden; font-family:sans-serif; }
+canvas { display:block; background:#fff; }
 #jumpButton {
-    width:120px; height:120px; border-radius:50%;
-    background-color:blue; color:white; font-size:20px; font-weight:bold;
-    border:none; cursor:pointer;
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: #28a745;
+    color: white;
+    font-size: 20px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+#score {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 }
 </style>
 </head>
 <body>
+
 <canvas id="gameCanvas"></canvas>
-<div id="groundContainer">
-    <button id="jumpButton">ПРЫЖОК</button>
-</div>
+<div id="score">Очки: 0</div>
+<button id="jumpButton">ПРЫЖОК</button>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
+let width = window.innerWidth;
+let height = window.innerHeight;
+canvas.width = width;
+canvas.height = height;
 
-const groundHeight = canvas.height * 0.2;
-const groundLevel = canvas.height - groundHeight;
+window.addEventListener('resize', () => {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+});
 
-let player = { x:80, y:groundLevel-100, width:100, height:100, dy:0, jumping:false };
-let obstacles = [];
-let gameSpeed = 6;
-let gravity = 0.6;
-let jumpPower = -14;
-let obstacleTimer = 0;
-let obstacleInterval = 80;
-let jumpCount = 0;
+const groundHeight = height * 0.2;
+const groundLevel = height - groundHeight;
 
-// Фон
-const backgroundImage = new Image();
-backgroundImage.src = "https://img.freepik.com/free-vector/flat-geometric-forest-with-lake_23-2147541650.jpg";
-let backgroundX = 0;
-let backgroundSpeed = 3;
+let player = {
+    x: 80,
+    y: groundLevel - 100,
+    width: 100,
+    height: 100,
+    dy: 0,
+    jumping: false,
+    jumpTimer: 0
+};
 
-// Персонаж
 const playerImage = new Image();
 playerImage.src = "https://cdn.pixabay.com/photo/2024/02/06/12/28/ai-generated-8556930_1280.png";
 
-// Препятствия
 const bushImage = new Image();
 bushImage.src = "https://gas-kvas.com/uploads/posts/2023-02/1676434620_gas-kvas-com-p-kustik-detskii-risunok-3.jpg";
 
-function gameOver() {
-    alert("Game Over! Ваш счёт: " + jumpCount);
-    document.location.reload();
+const backgroundImage = new Image();
+backgroundImage.src = "https://img.freepik.com/free-vector/flat-geometric-forest-with-lake_23-2147541650.jpg";
+let backgroundX = 0;
+const backgroundSpeed = 3;
+
+let obstacles = [];
+let gameSpeed = 6;
+let gravity = 0.7;
+let jumpPower = -16;
+let obstacleTimer = 0;
+const obstacleInterval = 90;
+let score = 0;
+
+const scoreElem = document.getElementById("score");
+
+// Плавный прыжок
+function jump(){
+    if(!player.jumping){
+        player.dy = jumpPower;
+        player.jumping = true;
+        player.jumpTimer = 0;
+    }
 }
 
-function update() {
-    player.y += player.dy;
+document.getElementById("jumpButton").addEventListener("click", jump);
+document.addEventListener("keydown", e => { if(e.code === "Space") jump(); });
+
+function update(){
+    // движение игрока с плавным гравитационным ускорением
     player.dy += gravity;
+    player.y += player.dy;
 
     if(player.y + player.height >= groundLevel){
         player.y = groundLevel - player.height;
@@ -81,72 +113,57 @@ function update() {
         player.jumping = false;
     }
 
-    obstacles.forEach(obstacle => {
-        obstacle.x -= gameSpeed;
-        if(
-            player.x + player.width - 20 > obstacle.x &&
-            player.x + 20 < obstacle.x + obstacle.width &&
-            player.y + player.height - 20 > obstacle.y
-        ) {
-            gameOver();
+    // препятствия
+    obstacles.forEach(obs => {
+        obs.x -= gameSpeed;
+        if(player.x + player.width > obs.x &&
+           player.x < obs.x + obs.width &&
+           player.y + player.height > obs.y){
+            alert("Game Over! Очки: " + score);
+            document.location.reload();
         }
     });
+    obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
 
-    obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
-
+    // генерация препятствий
     if(obstacleTimer <= 0){
-        const minGap = 180;
-        const maxGap = 350;
-        const randomGap = minGap + Math.random() * (maxGap - minGap);
-        obstacles.push({ x: canvas.width + randomGap, y: groundLevel - 50, width: 70, height: 50 });
+        const gap = 200 + Math.random() * 200;
+        obstacles.push({ x: width + gap, y: groundLevel - 60, width: 80, height: 60 });
         obstacleTimer = obstacleInterval;
-    } else obstacleTimer--;
+        score++;
+        scoreElem.textContent = "Очки: " + score;
 
-    if(jumpCount >= 6){
-        gameSpeed += 0.5;
-        jumpCount = 0;
+        // увеличение скорости каждые 5 очков
+        if(score % 5 === 0) gameSpeed += 0.5;
+    } else {
+        obstacleTimer--;
     }
 
-    // Прокрутка фона
+    // фон
     backgroundX -= backgroundSpeed;
-    if(backgroundX <= -canvas.width) backgroundX = 0;
+    if(backgroundX <= -width) backgroundX = 0;
 }
 
-function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+function draw(){
+    ctx.clearRect(0,0,width,height);
+    // фон с параллаксом
+    ctx.drawImage(backgroundImage, backgroundX, 0, width, height);
+    ctx.drawImage(backgroundImage, backgroundX + width, 0, width, height);
 
-    // Фон
-    ctx.drawImage(backgroundImage, backgroundX, 0, canvas.width, canvas.height);
-    ctx.drawImage(backgroundImage, backgroundX + canvas.width, 0, canvas.width, canvas.height);
-
-    // Персонаж
+    // игрок
     ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
-    // Препятствия
-    obstacles.forEach(obstacle => {
-        ctx.drawImage(bushImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-    });
+    // препятствия
+    obstacles.forEach(obs => ctx.drawImage(bushImage, obs.x, obs.y, obs.width, obs.height));
 }
 
-function gameLoop() {
+function loop(){
     update();
     draw();
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(loop);
 }
 
-gameLoop();
-
-function jump(){
-    if(!player.jumping){
-        player.dy = jumpPower;
-        player.jumping = true;
-        jumpCount++;
-    }
-}
-
-document.getElementById("jumpButton").addEventListener("click", jump);
-document.addEventListener("keydown", e => { if(e.code === "Space") jump(); });
-document.addEventListener("gesturestart", e => e.preventDefault());
+loop();
 </script>
 </body>
 </html>
