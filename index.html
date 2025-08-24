@@ -8,13 +8,13 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
     display:flex; justify-content:center; align-items:center;
-    height:100vh; background-color:white; overflow:hidden;
-    flex-direction:column; position:relative; touch-action: manipulation;
+    height:100vh; overflow:hidden; flex-direction:column;
+    position:relative; touch-action: manipulation;
 }
-canvas { background-color:white; display:block; }
+canvas { display:block; position:absolute; top:0; left:0; width:100vw; height:100vh; }
 #groundContainer {
     position:absolute; bottom:0; width:100%; height:25%;
-    background-color:black; display:flex; justify-content:center; align-items:center;
+    display:flex; justify-content:center; align-items:center;
 }
 #jumpButton {
     width:120px; height:120px; border-radius:50%;
@@ -35,7 +35,7 @@ const ctx = canvas.getContext("2d");
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight * 0.75;
+    canvas.height = window.innerHeight;
 }
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
@@ -43,7 +43,7 @@ resizeCanvas();
 const groundHeight = canvas.height * 0.2;
 const groundLevel = canvas.height - groundHeight;
 
-let player = { x:80, y:groundLevel-80, width:100, height:100, dy:0, jumping:false };
+let player = { x:80, y:groundLevel-100, width:100, height:100, dy:0, jumping:false };
 let obstacles = [];
 let gameSpeed = 6;
 let gravity = 0.6;
@@ -52,13 +52,20 @@ let obstacleTimer = 0;
 let obstacleInterval = 80;
 let jumpCount = 0;
 
-// Изображения
+// Фон
+const backgroundImage = new Image();
+backgroundImage.src = "https://img.freepik.com/free-vector/flat-geometric-forest-with-lake_23-2147541650.jpg";
+let backgroundX = 0;
+let backgroundSpeed = 3;
+
+// Персонаж
 const playerImage = new Image();
 playerImage.src = "https://cdn.pixabay.com/photo/2024/02/06/12/28/ai-generated-8556930_1280.png";
+
+// Препятствия
 const bushImage = new Image();
 bushImage.src = "https://gas-kvas.com/uploads/posts/2023-02/1676434620_gas-kvas-com-p-kustik-detskii-risunok-3.jpg";
 
-// Game Over
 function gameOver() {
     alert("Game Over! Ваш счёт: " + jumpCount);
     document.location.reload();
@@ -74,47 +81,54 @@ function update() {
         player.jumping = false;
     }
 
-    for(let i=0;i<obstacles.length;i++){
-        obstacles[i].x -= gameSpeed;
-
-        let hitbox = {
-            x: obstacles[i].x+10,
-            y: obstacles[i].y+10,
-            width: obstacles[i].width-20,
-            height: obstacles[i].height-20
-        };
-
-        if(player.x + player.width > hitbox.x &&
-           player.x < hitbox.x + hitbox.width &&
-           player.y + player.height > hitbox.y){
-               gameOver();
+    obstacles.forEach(obstacle => {
+        obstacle.x -= gameSpeed;
+        if(
+            player.x + player.width - 20 > obstacle.x &&
+            player.x + 20 < obstacle.x + obstacle.width &&
+            player.y + player.height - 20 > obstacle.y
+        ) {
+            gameOver();
         }
-    }
+    });
 
-    obstacles = obstacles.filter(o=>o.x+o.width>0);
+    obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
 
     if(obstacleTimer <= 0){
-        let minGap = 180;
-        let maxGap = 350;
-        let randomGap = minGap + Math.random()*(maxGap-minGap);
-        obstacles.push({ x: canvas.width + randomGap, y: groundLevel-60, width:80, height:60 });
+        const minGap = 180;
+        const maxGap = 350;
+        const randomGap = minGap + Math.random() * (maxGap - minGap);
+        obstacles.push({ x: canvas.width + randomGap, y: groundLevel - 50, width: 70, height: 50 });
         obstacleTimer = obstacleInterval;
     } else obstacleTimer--;
+
+    if(jumpCount >= 6){
+        gameSpeed += 0.5;
+        jumpCount = 0;
+    }
+
+    // Прокрутка фона
+    backgroundX -= backgroundSpeed;
+    if(backgroundX <= -canvas.width) backgroundX = 0;
 }
 
-function draw(){
+function draw() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, groundLevel, canvas.width, groundHeight);
 
+    // Фон
+    ctx.drawImage(backgroundImage, backgroundX, 0, canvas.width, canvas.height);
+    ctx.drawImage(backgroundImage, backgroundX + canvas.width, 0, canvas.width, canvas.height);
+
+    // Персонаж
     ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
-    for(let obs of obstacles){
-        ctx.drawImage(bushImage, obs.x, obs.y, obs.width, obs.height);
-    }
+    // Препятствия
+    obstacles.forEach(obstacle => {
+        ctx.drawImage(bushImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    });
 }
 
-function gameLoop(){
+function gameLoop() {
     update();
     draw();
     requestAnimationFrame(gameLoop);
@@ -122,19 +136,17 @@ function gameLoop(){
 
 gameLoop();
 
-// Прыжок
 function jump(){
     if(!player.jumping){
         player.dy = jumpPower;
         player.jumping = true;
         jumpCount++;
-        if(jumpCount % 6 === 0) gameSpeed++;
     }
 }
 
 document.getElementById("jumpButton").addEventListener("click", jump);
-document.addEventListener("keydown",(e)=>{if(e.code==="Space") jump();});
-document.addEventListener("gesturestart",(e)=>e.preventDefault());
+document.addEventListener("keydown", e => { if(e.code === "Space") jump(); });
+document.addEventListener("gesturestart", e => e.preventDefault());
 </script>
 </body>
 </html>
