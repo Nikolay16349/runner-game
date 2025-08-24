@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Кликер для Telegram</title>
+  <title>Кликер Telegram Web App</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,6 +19,8 @@
 
     h1 {
       margin-bottom: 10px;
+      color: #fff;
+      text-shadow: 1px 1px 5px #000;
     }
 
     #counter {
@@ -44,6 +46,12 @@
       transform: scale(0.9);
       box-shadow: 0 0 10px #fff;
     }
+
+    #user-info {
+      font-size: 18px;
+      color: #fff;
+      text-shadow: 1px 1px 5px #000;
+    }
   </style>
 </head>
 <body>
@@ -63,24 +71,24 @@
       // Получаем данные пользователя
       const userInfo = tg.initDataUnsafe?.user;
       if (userInfo) {
-        document.getElementById('user-info').textContent = 
+        document.getElementById('user-info').textContent =
           Привет, ${userInfo.first_name} ${userInfo.last_name || ''}!;
       } else {
-        document.getElementById('user-info').textContent = 
-          'Не удалось получить данные пользователя.';
+        document.getElementById('user-info').textContent =
+          'Привет! (не удалось получить данные пользователя)';
       }
 
       // Растягиваем приложение на весь экран
       tg.expand();
 
-      // Кликер кнопка
+      // Кликер
       const counterElem = document.getElementById('counter');
       document.getElementById('click-btn').addEventListener('click', () => {
         count++;
         counterElem.textContent = count;
       });
 
-      // Кнопка отправки данных боту
+      // Отправка результата боту
       document.getElementById('send-btn').addEventListener('click', () => {
         const dataToSend = {
           message: "Результат кликера",
@@ -88,11 +96,15 @@
           clicks: count
         };
         tg.sendData(JSON.stringify(dataToSend));
-        alert(`Данные отправлены боту! Ваш результат: ${count} кликов.`);
+        tg.close(); // Закрываем Web App после отправки
       });
 
     } else {
-      document.getElementById('user-info').textContent = 'Telegram Web App API недоступно.';
+      // Сообщение для запуска вне Telegram
+      document.getElementById('user-info').textContent =
+        'Откройте это приложение через Telegram, чтобы оно работало.';
+      document.getElementById('click-btn').disabled = true;
+      document.getElementById('send-btn').disabled = true;
     }
   </script>
 </body>
